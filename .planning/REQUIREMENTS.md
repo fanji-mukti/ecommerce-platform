@@ -146,6 +146,7 @@
 | CON-03 | Phase 1 | Pending |
 | ADR-01 | Phase 1 | Pending |
 | ADR-02 | Phase 1 | Pending |
+| INF-03 | Phase 1 | Pending |
 | INF-04 | Phase 1 | Pending |
 | IDN-01 | Phase 2 | Pending |
 | IDN-02 | Phase 2 | Pending |
@@ -156,6 +157,8 @@
 | CAT-03 | Phase 2 | Pending |
 | FE-01 | Phase 2 | Pending |
 | FE-04 | Phase 2 | Pending |
+| INF-01 | Phase 2 | Pending |
+| INF-02 | Phase 2 | Pending |
 | CART-01 | Phase 3 | Pending |
 | CART-02 | Phase 3 | Pending |
 | CART-03 | Phase 3 | Pending |
@@ -164,9 +167,7 @@
 | ORD-02 | Phase 3 | Pending |
 | ORD-03 | Phase 3 | Pending |
 | ORD-04 | Phase 3 | Pending |
-| INF-01 | Phase 2 | Pending |
-| INF-02 | Phase 2 | Pending |
-| INF-03 | Phase 1 | Pending |
+| FE-02 | Phase 3 | Pending |
 | CHK-01 | Phase 4 | Pending |
 | CHK-02 | Phase 4 | Pending |
 | CHK-03 | Phase 4 | Pending |
@@ -175,7 +176,6 @@
 | PAY-01 | Phase 4 | Pending |
 | PAY-02 | Phase 4 | Pending |
 | PAY-03 | Phase 4 | Pending |
-| FE-02 | Phase 3 | Pending |
 | FE-03 | Phase 4 | Pending |
 | FUL-01 | Phase 5 | Pending |
 | FUL-02 | Phase 5 | Pending |
@@ -186,10 +186,10 @@
 | IAC-03 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 43 total
-- Mapped to phases: 43
-- Unmapped: 0 ✓
+- v1 requirements: 46 total
+- Mapped to phases: 46
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-30*
-*Last updated: 2026-05-30 after initial definition*
+*Last updated: 2026-05-30 after roadmap creation (traceability re-confirmed against ROADMAP.md)*
