@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Foundations** — Lock contracts shape, Compose baseline, Aspire AppHost, OpenTelemetry, and first 8 ADRs
+- [x] **Phase 1: Foundations** — Lock contracts shape, Compose baseline, Aspire AppHost, OpenTelemetry, and first 8 ADRs (completed 2026-06-03)
 - [ ] **Phase 2: Identity, Catalog & Gateway** — User can register/login and browse catalog through YARP gateway with outbox/inbox wired from day one
 - [ ] **Phase 3: Cart & Orders Skeleton** — Per-user Redis cart and Orders aggregate with CQRS read model and state machine
 - [ ] **Phase 4: Checkout Saga & Payments** — Headline demo: place order triggers saga, deterministic failure shows live compensation
@@ -32,13 +32,13 @@
 3. `docker compose up` (generated from .NET Aspire AppHost via `aspire publish`) brings up Postgres, Redis, ASB emulator, and a stub health-checked service that emits OpenTelemetry traces visible in the Aspire dashboard.
 4. At least 8 MADR-format ADRs exist in `docs/adr/` (numbered kebab-case) covering ASB choice, DB-per-service, YARP gateway, saga orchestration, MassTransit + outbox/inbox, ASB topic-per-context, MADR format, and mono-repo structure.
 5. Every scaffolded service exposes a `GET /health` endpoint returning 200 and structured logs carry a correlation ID across simulated service boundaries.
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 Plans:
 - [x] 01-01-PLAN.md — Contracts library: IMessageEnvelope interface, 8 namespace stubs, Contracts.sln
 - [x] 01-02-PLAN.md — 8 service stubs: csproj + Program.cs (OTel/Serilog/health) + .sln per service
 - [x] 01-03-PLAN.md — Aspire AppHost: wire all 8 stubs to postgres/redis/ASB emulator, docker-compose publishing
 - [x] 01-04-PLAN.md — GitHub Actions CI: 10-solution matrix, fail-fast: false
-- [ ] 01-05-PLAN.md — 8 MADR ADRs in docs/adr/ (0001–0008)
+- [x] 01-05-PLAN.md — 8 MADR ADRs in docs/adr/ (0001–0008)
 
 **Wave 1** *(parallel)*: 01-01, 01-02
 **Wave 2** *(blocked on Wave 1)*: 01-03, 01-04
@@ -126,7 +126,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundations | 4/5 | In Progress|  |
+| 1. Foundations | 5/5 | Complete   | 2026-06-03 |
 | 2. Identity, Catalog & Gateway | 0/? | Not started | - |
 | 3. Cart & Orders Skeleton | 0/? | Not started | - |
 | 4. Checkout Saga & Payments | 0/? | Not started | - |
