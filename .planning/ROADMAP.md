@@ -32,10 +32,10 @@
 3. `docker compose up` (generated from .NET Aspire AppHost via `aspire publish`) brings up Postgres, Redis, ASB emulator, and a stub health-checked service that emits OpenTelemetry traces visible in the Aspire dashboard.
 4. At least 8 MADR-format ADRs exist in `docs/adr/` (numbered kebab-case) covering ASB choice, DB-per-service, YARP gateway, saga orchestration, MassTransit + outbox/inbox, ASB topic-per-context, MADR format, and mono-repo structure.
 5. Every scaffolded service exposes a `GET /health` endpoint returning 200 and structured logs carry a correlation ID across simulated service boundaries.
-**Plans:** 5 plans
+**Plans:** 2/5 plans executed
 Plans:
-- [ ] 01-01-PLAN.md — Contracts library: IMessageEnvelope interface, 8 namespace stubs, Contracts.sln
-- [ ] 01-02-PLAN.md — 8 service stubs: csproj + Program.cs (OTel/Serilog/health) + .sln per service
+- [x] 01-01-PLAN.md — Contracts library: IMessageEnvelope interface, 8 namespace stubs, Contracts.sln
+- [x] 01-02-PLAN.md — 8 service stubs: csproj + Program.cs (OTel/Serilog/health) + .sln per service
 - [ ] 01-03-PLAN.md — Aspire AppHost: wire all 8 stubs to postgres/redis/ASB emulator, docker-compose publishing
 - [ ] 01-04-PLAN.md — GitHub Actions CI: 10-solution matrix, fail-fast: false
 - [ ] 01-05-PLAN.md — 8 MADR ADRs in docs/adr/ (0001–0008)
@@ -126,7 +126,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundations | 0/5 | Planned | - |
+| 1. Foundations | 2/5 | In Progress|  |
 | 2. Identity, Catalog & Gateway | 0/? | Not started | - |
 | 3. Cart & Orders Skeleton | 0/? | Not started | - |
 | 4. Checkout Saga & Payments | 0/? | Not started | - |
