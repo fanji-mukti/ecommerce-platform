@@ -673,22 +673,25 @@ For services within the same Aspire-managed Docker network, `servicebus-emulator
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **MassTransit 8.3.6 + ASB Emulator AMQP connectivity**
    - What we know: MT8 does not have `EmulatorHost()`. The Azure SDK `UseDevelopmentEmulator=true` flag enables non-TLS AMQP. Community reports show MT8 defaulting to port 443 (HTTPS management).
    - What's unclear: Whether MT8 connection to `Endpoint=sb://localhost;...;UseDevelopmentEmulator=true` works transparently via the Azure SDK (MT uses `Azure.Messaging.ServiceBus` internally), or requires custom `ServiceBusClientOptions`.
    - Recommendation: Phase 2 spike task — stand up a single consumer against the Aspire-injected emulator connection string and verify AMQP connectivity before building all 8 service configs. If it fails, the mitigation is to use a mock in-memory transport for local dev (MassTransit has `UsingInMemory()`) and only test with the real ASB emulator in CI.
+   - **RESOLVED:** Phase 1 has no MassTransit consumers — this pitfall does not surface in Phase 1. A Phase 2 spike is required to verify AMQP connectivity before wiring MassTransit consumers.
 
 2. **Contracts.sln inclusion**
    - What we know: CONTEXT.md D-07 says each service has its own `.sln`. `Contracts.csproj` is shared via project reference.
    - What's unclear: Should `Contracts.csproj` have its own `Contracts.sln` at `src/building-blocks/Contracts/`, separate from all service solutions? The CI matrix in D-16 includes a `Contracts` entry, implying yes.
    - Recommendation: Create `Contracts.sln` at `src/building-blocks/Contracts/Contracts.sln`. This is the entry in the CI matrix. Service solutions reference the `.csproj` directly, not the Contracts `.sln`.
+   - **RESOLVED:** Plan 01-01 Task 3 creates Contracts.sln using the dotnet CLI.
 
 3. **Aspire ServiceDefaults project**
    - What we know: Aspire typically recommends a `ServiceDefaults` shared project with extension methods (`AddServiceDefaults()`, `MapDefaultEndpoints()`) that wire OTel, health checks, and service discovery.
    - What's unclear: D-05 does not mention ServiceDefaults. Should Phase 1 scaffold this as a `src/building-blocks/ServiceDefaults/` project, or inline OTel/Serilog configuration per-service?
    - Recommendation: Create a `ServiceDefaults` project. This avoids duplicating the OTel + Serilog wiring across 8 stubs and aligns with Aspire best practices. The planner should add this as a task if not already planned.
+   - **RESOLVED:** Per D-05, each service uses per-service inline OTel/Serilog configuration (no shared ServiceDefaults project in Phase 1). Plan 01-02 implements this directly in each stub's Program.cs.
 
 ---
 
