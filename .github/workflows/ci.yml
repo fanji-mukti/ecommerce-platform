@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        solution:
+          - src/building-blocks/Contracts/Contracts.sln
+          - src/ecommerce.AppHost/ecommerce.AppHost.sln
+          - src/services/catalog/Catalog.sln
+          - src/services/cart/Cart.sln
+          - src/services/checkout/Checkout.sln
+          - src/services/orders/Orders.sln
+          - src/services/identity/Identity.sln
+          - src/services/payments/Payments.sln
+          - src/services/fulfillment/Fulfillment.sln
+          - src/services/notifications/Notifications.sln
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore ${{ matrix.solution }}
+
+      - name: Build
+        run: dotnet build ${{ matrix.solution }} --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test ${{ matrix.solution }} --no-build --configuration Release
