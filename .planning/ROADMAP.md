@@ -126,7 +126,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundations | 5/5 | Complete   | 2026-06-03 |
+| 1. Foundations | 5/5 | Complete    | 2026-06-11 |
 | 2. Identity, Catalog & Gateway | 0/? | Not started | - |
 | 3. Cart & Orders Skeleton | 0/? | Not started | - |
 | 4. Checkout Saga & Payments | 0/? | Not started | - |
