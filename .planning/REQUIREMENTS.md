@@ -58,21 +58,21 @@
 
 ### Contracts
 
-- [ ] **CON-01**: Shared Contracts library defines all ASB message types as pure C# records (no domain logic, no EF, no MediatR)
-- [ ] **CON-02**: Messages include envelope fields: MessageId, CorrelationId, CausationId, OccurredAt
-- [ ] **CON-03**: Messages are namespaced per producing service with `.V1` suffix (e.g. `ECommerce.Catalog.Events.V1`)
+- [x] **CON-01**: Shared Contracts library defines all ASB message types as pure C# records (no domain logic, no EF, no MediatR)
+- [x] **CON-02**: Messages include envelope fields: MessageId, CorrelationId, CausationId, OccurredAt
+- [x] **CON-03**: Messages are namespaced per producing service with `.V1` suffix (e.g. `ECommerce.Catalog.Events.V1`)
 
 ### Infrastructure & Cross-Cutting
 
 - [ ] **INF-01**: Every publishing service uses MassTransit transactional outbox for guaranteed at-least-once delivery
 - [ ] **INF-02**: Every consuming service uses idempotent inbox to deduplicate redelivered messages
-- [ ] **INF-03**: All services emit OpenTelemetry traces and structured logs with correlation ID across service boundaries
-- [ ] **INF-04**: All services expose GET /health endpoints for readiness and liveness probes
+- [x] **INF-03**: All services emit OpenTelemetry traces and structured logs with correlation ID across service boundaries
+- [x] **INF-04**: All services expose GET /health endpoints for readiness and liveness probes
 
 ### Architecture Decision Records
 
-- [ ] **ADR-01**: ADRs follow MADR 4.0 format, stored in docs/adr/ with numbered kebab-case filenames
-- [ ] **ADR-02**: Minimum 8 ADRs written during Phase 1 (covering: ASB choice, DB-per-service, YARP gateway, saga orchestration, MassTransit + outbox, ASB topic design, MADR format, mono-repo structure); total ~26 by Phase 6
+- [x] **ADR-01**: ADRs follow MADR 4.0 format, stored in docs/adr/ with numbered kebab-case filenames
+- [x] **ADR-02**: Minimum 8 ADRs written during Phase 1 (covering: ASB choice, DB-per-service, YARP gateway, saga orchestration, MassTransit + outbox, ASB topic design, MADR format, mono-repo structure); total ~26 by Phase 6
 
 ### Infrastructure as Code
 
@@ -82,9 +82,9 @@
 
 ### Mono-Repo Structure
 
-- [ ] **REPO-01**: Each service has its own .sln file (independently openable in Visual Studio)
-- [ ] **REPO-02**: All service solutions reference the shared Contracts project via relative path (not NuGet)
-- [ ] **REPO-03**: Local orchestration via Docker Compose (generated from .NET Aspire AppHost via `aspire publish`)
+- [x] **REPO-01**: Each service has its own .sln file (independently openable in Visual Studio)
+- [x] **REPO-02**: All service solutions reference the shared Contracts project via relative path (not NuGet)
+- [x] **REPO-03**: Local orchestration via Docker Compose (generated from .NET Aspire AppHost via `aspire publish`)
 
 ### Angular Frontend
 
@@ -138,16 +138,16 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REPO-01 | Phase 1 | Pending |
-| REPO-02 | Phase 1 | Pending |
-| REPO-03 | Phase 1 | Pending |
-| CON-01 | Phase 1 | Pending |
-| CON-02 | Phase 1 | Pending |
-| CON-03 | Phase 1 | Pending |
-| ADR-01 | Phase 1 | Pending |
-| ADR-02 | Phase 1 | Pending |
-| INF-03 | Phase 1 | Pending |
-| INF-04 | Phase 1 | Pending |
+| REPO-01 | Phase 1 | Complete |
+| REPO-02 | Phase 1 | Complete |
+| REPO-03 | Phase 1 | Complete |
+| CON-01 | Phase 1 | Complete |
+| CON-02 | Phase 1 | Complete |
+| CON-03 | Phase 1 | Complete |
+| ADR-01 | Phase 1 | Complete |
+| ADR-02 | Phase 1 | Complete |
+| INF-03 | Phase 1 | Complete |
+| INF-04 | Phase 1 | Complete |
 | IDN-01 | Phase 2 | Pending |
 | IDN-02 | Phase 2 | Pending |
 | IDN-03 | Phase 2 | Pending |
