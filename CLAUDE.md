@@ -36,7 +36,7 @@ An event-driven e-commerce platform built as a portfolio and learning project. I
 | Resilience | `Microsoft.Extensions.Resilience` / Polly v8 | HIGH |
 | Local orchestration | **.NET Aspire 10.x** AppHost + Docker Compose export | MEDIUM |
 | Container runtime | Distroless `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled` | HIGH |
-| Identity | ASP.NET Core Identity + **OpenIddict 6.x** (self-hosted OIDC) | MEDIUM |
+| Identity | ASP.NET Core Identity + **OpenIddict 7.5.0** (self-hosted OIDC) | MEDIUM |
 | API gateway (optional) | YARP 2.x reverse proxy | MEDIUM |
 | Testing | xUnit v3 + Testcontainers-for-.NET + WireMock.Net | HIGH |
 | Frontend | **Angular 20** (zoneless, standalone, signals) | MEDIUM |
@@ -194,7 +194,7 @@ An event-driven e-commerce platform built as a portfolio and learning project. I
 - [ ] `Microsoft.AspNetCore.OpenApi` — confirm it's still the default OpenAPI generator in .NET 10
 - [ ] MediatR — check current license terms; if v13 has shipped with commercial terms, lock to v12.x or switch to Mediator.SourceGenerator and update this doc
 - [ ] AutoMapper — confirm license stance before assuming anyone still wants it (same reason)
-- [ ] OpenIddict 6.x — confirm latest minor; verify .NET 10 support
+- [ ] OpenIddict 7.5.0 — confirmed on NuGet (verified in Phase 2 research); .NET 10 support verified
 - [ ] Angular — confirm whether Angular 20 or 21 is current; both follow the same architectural recommendations here
 - [ ] Terraform AzureRM 4.x — confirm latest 4.x minor; check changelog for Container Apps + Service Bus resource changes
 - [ ] Azure Service Bus Emulator container — confirm latest tag and feature parity gaps with cloud ASB (sessions, transactions)

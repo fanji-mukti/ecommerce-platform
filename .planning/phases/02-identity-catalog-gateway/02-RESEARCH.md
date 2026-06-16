@@ -1021,27 +1021,31 @@ app.MapGet("/products", async (
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **MassTransit 8.3.6 + ASB emulator connectivity in Phase 2 local dev**
    - What we know: GitHub issue #5689 confirms no supported path; InMemory harness (D-14) avoids the issue for the test.
    - What's unclear: Can the Catalog → Notifications event flow be demonstrated locally without real ASB? Is the demo expected to show real ASB message delivery (not just test harness)?
    - Recommendation: Planner should add a Wave 0 task to spike ASB emulator connectivity with MassTransit 8.3.6. If blocked, document that local demo uses InMemory test for outbox proof, and real ASB is required for full demo. Keep this as a known limitation, not a blocker.
+   - RESOLVED: Phase 2 accepts InMemory harness + Testcontainers for inbox deduplication proof. Full Catalog→ASB→Notifications path deferred to Phase 4 with real Azure Service Bus.
 
 2. **OpenIddict authorization endpoint: Minimal API vs MVC Controller**
    - What we know: Official docs say MVC controllers are required for token issuance; passthrough mode allows Minimal API for routing. Samples use MVC.
    - What's unclear: Does `MapGet("/connect/authorize", ...)` with passthrough fully work without adding `AddControllers()`?
    - Recommendation: Planner should default to adding Razor Pages + a minimal `/Authorization` controller to match the official OpenIddict sample patterns. This is safer than relying on Minimal API passthrough only.
+   - RESOLVED: Use OpenIddict Minimal API passthrough for authorization endpoint. If passthrough fails at runtime, fall back to AddControllers() + Controller class (executor decision, not planner decision).
 
 3. **angular-auth-oidc-client version for Angular 20**
    - What we know: Library is at 21.0.2 (May 2026); CONTEXT.md D-03 specified 19.x.
    - What's unclear: Is 21.x backward compatible as a peer dep to Angular 20, or is 20.x the correct version?
    - Recommendation: Planner must add a task to verify peer deps before `npm install`. Use `npm info angular-auth-oidc-client@21 peerDependencies` to confirm.
+   - RESOLVED: Verify angular-auth-oidc-client peer deps with `npm info angular-auth-oidc-client peerDependencies` before install. Use 20.x if compatible with Angular 20, else 21.x.
 
 4. **Identity service Razor Pages login page — scaffold or manual?**
    - What we know: OpenIddict requires a login UI; ASP.NET Core Identity provides scaffolding via `dotnet aspnet-codegenerator`.
    - What's unclear: Does the Minimal APIs baseline from Phase 1 support Razor Pages co-hosted without conflicts?
    - Recommendation: Add `AddRazorPages()` + `MapRazorPages()` alongside existing Minimal API endpoints. Use `dotnet aspnet-codegenerator identity --files "Account.Login;Account.Logout"` to scaffold only the needed pages.
+   - RESOLVED: Identity service Razor Pages login — scaffold using dotnet aspnet-codegenerator (if available) or create manually from the template pattern in this RESEARCH.md (see Pattern 2 and Pitfall 2).
 
 ---
 
