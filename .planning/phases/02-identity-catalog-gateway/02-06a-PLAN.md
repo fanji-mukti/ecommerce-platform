@@ -32,6 +32,12 @@ must_haves:
     - "Angular dev proxy routes /api/* to YARP gateway at http://localhost:5000 (not OIDC endpoints)"
     - "Five routes are registered: /catalog, /product/:id, /login, /register, /callback"
     - "App shell (AppComponent) renders mat-toolbar with nav links and conditional Sign In / Sign Out based on auth state"
+    - "[D-16] Angular scaffolded with provideZonelessChangeDetection(), standalone components, signals — no Zone.js, no NgModules"
+    - "[D-17] UI component library is Angular Material 20 (mat-card, mat-form-field, mat-toolbar)"
+    - "[D-18] provideHttpClient(withFetch()) with a single functional authInterceptor attaching Bearer token to all calls"
+    - "[D-19] Angular runs via ng serve on localhost:4200; not added to Aspire AppHost in Phase 2; proxy.conf.json proxies /api/* to gateway"
+    - "[D-20] Five routes registered: /catalog, /product/:id, /login, /register, /callback (plus default and wildcard redirects to /catalog)"
+    - "[D-21] Vitest via @analogjs/vitest-angular configured at scaffold time in vitest.config.ts; Angular tests written from the start"
   artifacts:
     - path: "src/frontend/ecommerce-app/src/app/app.config.ts"
       provides: "Angular app configuration with OIDC, HTTP client, zoneless change detection"
