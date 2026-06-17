@@ -65,7 +65,7 @@
 ### Infrastructure & Cross-Cutting
 
 - [x] **INF-01**: Every publishing service uses MassTransit transactional outbox for guaranteed at-least-once delivery
-- [ ] **INF-02**: Every consuming service uses idempotent inbox to deduplicate redelivered messages
+- [x] **INF-02**: Every consuming service uses idempotent inbox to deduplicate redelivered messages
 - [x] **INF-03**: All services emit OpenTelemetry traces and structured logs with correlation ID across service boundaries
 - [x] **INF-04**: All services expose GET /health endpoints for readiness and liveness probes
 
@@ -158,7 +158,7 @@
 | FE-01 | Phase 2 | Complete |
 | FE-04 | Phase 2 | Pending |
 | INF-01 | Phase 2 | Complete |
-| INF-02 | Phase 2 | Pending |
+| INF-02 | Phase 2 | Complete |
 | CART-01 | Phase 3 | Pending |
 | CART-02 | Phase 3 | Pending |
 | CART-03 | Phase 3 | Pending |
