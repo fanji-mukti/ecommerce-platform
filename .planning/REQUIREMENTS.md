@@ -20,10 +20,10 @@
 
 ### Identity
 
-- [ ] **IDN-01**: User can register with email and password
-- [ ] **IDN-02**: User can log in and receive a JWT token (via OpenIddict)
-- [ ] **IDN-03**: User can retrieve their current profile (GET /me)
-- [ ] **IDN-04**: System provides seeded demo user accounts for demos
+- [x] **IDN-01**: User can register with email and password
+- [x] **IDN-02**: User can log in and receive a JWT token (via OpenIddict)
+- [x] **IDN-03**: User can retrieve their current profile (GET /me)
+- [x] **IDN-04**: System provides seeded demo user accounts for demos
 
 ### Orders
 
@@ -148,10 +148,10 @@
 | ADR-02 | Phase 1 | Complete |
 | INF-03 | Phase 1 | Complete |
 | INF-04 | Phase 1 | Complete |
-| IDN-01 | Phase 2 | Pending |
-| IDN-02 | Phase 2 | Pending |
-| IDN-03 | Phase 2 | Pending |
-| IDN-04 | Phase 2 | Pending |
+| IDN-01 | Phase 2 | Complete |
+| IDN-02 | Phase 2 | Complete |
+| IDN-03 | Phase 2 | Complete |
+| IDN-04 | Phase 2 | Complete |
 | CAT-01 | Phase 2 | Pending |
 | CAT-02 | Phase 2 | Pending |
 | CAT-03 | Phase 2 | Complete |
