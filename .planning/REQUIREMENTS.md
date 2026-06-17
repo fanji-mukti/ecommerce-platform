@@ -9,7 +9,7 @@
 
 - [ ] **CAT-01**: User can list products with pagination and category filtering
 - [ ] **CAT-02**: User can view product detail by ID
-- [ ] **CAT-03**: System provides seeded demo catalog of 20–50 SKUs with price and stock
+- [x] **CAT-03**: System provides seeded demo catalog of 20–50 SKUs with price and stock
 
 ### Cart
 
@@ -154,7 +154,7 @@
 | IDN-04 | Phase 2 | Pending |
 | CAT-01 | Phase 2 | Pending |
 | CAT-02 | Phase 2 | Pending |
-| CAT-03 | Phase 2 | Pending |
+| CAT-03 | Phase 2 | Complete |
 | FE-01 | Phase 2 | Pending |
 | FE-04 | Phase 2 | Pending |
 | INF-01 | Phase 2 | Pending |
