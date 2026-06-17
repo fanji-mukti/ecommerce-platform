@@ -1,0 +1,14 @@
+<div class="callback-page">
+  @if (!hasError()) {
+    <div class="loading-state">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Completing sign in...</p>
+    </div>
+  } @else {
+    <div class="error-state">
+      <h1>Sign-in failed</h1>
+      <p>We couldn't complete your sign-in. Please try again.</p>
+      <a mat-button routerLink="/login">Try Again</a>
+    </div>
+  }
+</div>
