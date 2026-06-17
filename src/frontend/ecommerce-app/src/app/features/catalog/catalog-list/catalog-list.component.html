@@ -1,0 +1,51 @@
+<div class="catalog-page">
+  <h1>Browse Products</h1>
+
+  @if (isLoading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  @if (hasError()) {
+    <div class="error-state">
+      <h2>Failed to load products</h2>
+      <p>Something went wrong while loading the catalog. Please refresh the page or try again.</p>
+      <button mat-raised-button color="primary" (click)="retry()">Retry</button>
+    </div>
+  }
+
+  @if (!hasError()) {
+    <mat-chip-listbox
+      class="category-filter"
+      aria-label="Filter by category"
+      (change)="onCategoryChange($event.value)"
+    >
+      @for (cat of categories(); track cat) {
+        <mat-chip-option [value]="cat" [selected]="cat === 'All' && selectedCategory() === null || cat === selectedCategory()">
+          {{ cat }}
+        </mat-chip-option>
+      }
+    </mat-chip-listbox>
+
+    @if (products().length === 0 && !isLoading()) {
+      <div class="empty-state">
+        <h2>No products found</h2>
+        <p>We couldn't find any products in this category. Try selecting a different category or check back later.</p>
+      </div>
+    } @else {
+      <div class="product-grid">
+        @for (product of products(); track product.id) {
+          <app-product-card [product]="product"></app-product-card>
+        }
+      </div>
+
+      <mat-paginator
+        [length]="totalCount()"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        [pageIndex]="currentPage()"
+        (page)="onPageChange($event)"
+        aria-label="Select page"
+      ></mat-paginator>
+    }
+  }
+</div>

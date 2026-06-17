@@ -1,9 +1,84 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
+import { Product, PagedResult } from '../../../shared/models/product.model';
+import { ProductCardComponent } from '../product-card/product-card.component';
 
 @Component({
   selector: 'app-catalog-list',
   standalone: true,
-  imports: [],
-  template: `<p>Catalog List (stub — replaced in plan 02-06b)</p>`,
+  imports: [
+    MatProgressBarModule,
+    MatChipsModule,
+    MatPaginatorModule,
+    MatButtonModule,
+    ProductCardComponent,
+  ],
+  templateUrl: './catalog-list.component.html',
+  styleUrl: './catalog-list.component.scss',
 })
-export class CatalogListComponent {}
+export class CatalogListComponent implements OnInit {
+  private http = inject(HttpClient);
+
+  products = signal<Product[]>([]);
+  isLoading = signal<boolean>(false);
+  hasError = signal<boolean>(false);
+  selectedCategory = signal<string | null>(null);
+  currentPage = signal<number>(0);
+  totalCount = signal<number>(0);
+
+  readonly pageSize = 12;
+  readonly pageSizeOptions = [12, 24, 48];
+
+  categories = computed(() => {
+    const cats = [...new Set(this.products().map((p) => p.category))].sort();
+    return ['All', ...cats];
+  });
+
+  ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  onCategoryChange(category: string): void {
+    this.selectedCategory.set(category === 'All' ? null : category);
+    this.currentPage.set(0);
+    this.loadProducts();
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.currentPage.set(event.pageIndex);
+    this.loadProducts();
+  }
+
+  retry(): void {
+    this.hasError.set(false);
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.isLoading.set(true);
+    this.hasError.set(false);
+
+    const page = this.currentPage() + 1;
+    let url = `/api/catalog/products?page=${page}&pageSize=${this.pageSize}`;
+    const category = this.selectedCategory();
+    if (category) {
+      url += `&category=${encodeURIComponent(category)}`;
+    }
+
+    this.http.get<PagedResult<Product>>(url).subscribe({
+      next: (result) => {
+        this.products.set(result.items);
+        this.totalCount.set(result.totalCount);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.hasError.set(true);
+      },
+    });
+  }
+}
