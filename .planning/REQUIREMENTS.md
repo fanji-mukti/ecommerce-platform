@@ -91,7 +91,7 @@
 - [x] **FE-01**: User can browse the product catalog and view product detail (/catalog, /product/:id)
 - [ ] **FE-02**: User can manage their cart (/cart)
 - [ ] **FE-03**: User can complete checkout and see order status updating in real-time via polling (/checkout, /orders/:id)
-- [ ] **FE-04**: User can register and log in (/register, /login)
+- [x] **FE-04**: User can register and log in (/register, /login)
 
 ---
 
@@ -156,7 +156,7 @@
 | CAT-02 | Phase 2 | Complete |
 | CAT-03 | Phase 2 | Complete |
 | FE-01 | Phase 2 | Complete |
-| FE-04 | Phase 2 | Pending |
+| FE-04 | Phase 2 | Complete |
 | INF-01 | Phase 2 | Complete |
 | INF-02 | Phase 2 | Complete |
 | CART-01 | Phase 3 | Pending |

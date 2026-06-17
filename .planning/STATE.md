@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-06-17T07:49:09.191Z"
+last_updated: "2026-06-17T08:04:38.994Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
   percent: 17
 ---
 
@@ -34,7 +34,7 @@ progress:
 ## Current Position
 
 Phase: 02 (identity-catalog-gateway) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 | Field | Value |
 |-------|-------|
 | Active phase | Phase 1: Foundations |
@@ -77,6 +77,7 @@ Plan: 6 of 7
 | Phase 02 P05 | 5min | 2 tasks | 8 files |
 | Phase 02 P03 | 30min | 2 tasks | 17 files |
 | Phase 02 P04 | 20min | 2 tasks | 13 files |
+| Phase 02 P06a | 12 | 1 tasks | 27 files |
 
 ## Accumulated Context
 
@@ -137,3 +138,4 @@ Plan: 6 of 7
 - [Phase ?]: Used CatalogWebApplicationFactory with in-memory MassTransit transport for integration tests (no ASB needed in CI)
 - [Phase ?]: Used MassTransit.TestFramework (not MassTransit.Testing) — correct NuGet package name for v8 test harness
 - [Phase ?]: Transport-level MessageId override required in InMemory harness tests to trigger deduplication — ctx.MessageId = messageId in publish callback
+- [Phase ?]: Angular Material 20.x pinned (not latest 22.x) due to Angular 20 peer dep requirements; prebuilt indigo-pink.css used (M3 SCSS API changed)
