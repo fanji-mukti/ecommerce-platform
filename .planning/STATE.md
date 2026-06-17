@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: ready_to_plan
-last_updated: "2026-06-17T07:23:04.135Z"
+last_updated: "2026-06-17T07:36:43.054Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 12
-  completed_plans: 8
+  completed_plans: 9
   percent: 17
 ---
 
@@ -34,7 +34,7 @@ progress:
 ## Current Position
 
 Phase: 02 (identity-catalog-gateway) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 | Field | Value |
 |-------|-------|
 | Active phase | Phase 1: Foundations |
@@ -75,6 +75,7 @@ Plan: 4 of 7
 | Phase 02 P01 | 15min | 2 tasks | 6 files |
 | Phase 02 P02 | 25min | 2 tasks | 21 files |
 | Phase 02 P05 | 5min | 2 tasks | 8 files |
+| Phase 02 P03 | 30min | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -129,3 +130,7 @@ Plan: 4 of 7
 ---
 
 *State file initialised: 2026-05-30 by gsd-roadmapper agent.*
+
+## Decisions
+
+- [Phase ?]: Used CatalogWebApplicationFactory with in-memory MassTransit transport for integration tests (no ASB needed in CI)

@@ -7,8 +7,8 @@
 
 ### Catalog
 
-- [ ] **CAT-01**: User can list products with pagination and category filtering
-- [ ] **CAT-02**: User can view product detail by ID
+- [x] **CAT-01**: User can list products with pagination and category filtering
+- [x] **CAT-02**: User can view product detail by ID
 - [x] **CAT-03**: System provides seeded demo catalog of 20–50 SKUs with price and stock
 
 ### Cart
@@ -64,7 +64,7 @@
 
 ### Infrastructure & Cross-Cutting
 
-- [ ] **INF-01**: Every publishing service uses MassTransit transactional outbox for guaranteed at-least-once delivery
+- [x] **INF-01**: Every publishing service uses MassTransit transactional outbox for guaranteed at-least-once delivery
 - [ ] **INF-02**: Every consuming service uses idempotent inbox to deduplicate redelivered messages
 - [x] **INF-03**: All services emit OpenTelemetry traces and structured logs with correlation ID across service boundaries
 - [x] **INF-04**: All services expose GET /health endpoints for readiness and liveness probes
@@ -152,12 +152,12 @@
 | IDN-02 | Phase 2 | Complete |
 | IDN-03 | Phase 2 | Complete |
 | IDN-04 | Phase 2 | Complete |
-| CAT-01 | Phase 2 | Pending |
-| CAT-02 | Phase 2 | Pending |
+| CAT-01 | Phase 2 | Complete |
+| CAT-02 | Phase 2 | Complete |
 | CAT-03 | Phase 2 | Complete |
 | FE-01 | Phase 2 | Complete |
 | FE-04 | Phase 2 | Pending |
-| INF-01 | Phase 2 | Pending |
+| INF-01 | Phase 2 | Complete |
 | INF-02 | Phase 2 | Pending |
 | CART-01 | Phase 3 | Pending |
 | CART-02 | Phase 3 | Pending |
