@@ -23,6 +23,7 @@ jobs:
           - src/services/payments/Payments.sln
           - src/services/fulfillment/Fulfillment.sln
           - src/services/notifications/Notifications.sln
+          - src/services/gateway/Gateway.sln
 
     steps:
       - uses: actions/checkout@v4
@@ -38,4 +39,4 @@ jobs:
         run: dotnet build ${{ matrix.solution }} --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test ${{ matrix.solution }} --no-build --configuration Release
+        run: dotnet test ${{ matrix.solution }} --no-build --configuration Release --collect "XPlat Code Coverage"

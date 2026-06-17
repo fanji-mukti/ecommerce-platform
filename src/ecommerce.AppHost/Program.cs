@@ -8,7 +8,7 @@ var serviceBus = builder.AddAzureServiceBus("messaging")
 
 // Service stubs — Aspire derives class name by replacing dots with underscores:
 // ECommerce.Catalog.API.csproj → Projects.ECommerce_Catalog_API
-builder.AddProject<Projects.ECommerce_Catalog_API>("catalog")
+var catalog = builder.AddProject<Projects.ECommerce_Catalog_API>("catalog")
     .WithEndpoint(
         name: "http",
         port: 5001,
@@ -52,7 +52,7 @@ builder.AddProject<Projects.ECommerce_Orders_API>("orders")
     .WithReference(postgres)
     .WithReference(serviceBus);
 
-builder.AddProject<Projects.ECommerce_Identity_API>("identity")
+var identity = builder.AddProject<Projects.ECommerce_Identity_API>("identity")
     .WithEndpoint(
         name: "http",
         port: 5005,
@@ -82,7 +82,7 @@ builder.AddProject<Projects.ECommerce_Fulfillment_API>("fulfillment")
     .WithExternalHttpEndpoints()
     .WithReference(serviceBus);
 
-builder.AddProject<Projects.ECommerce_Notifications_API>("notifications")
+var notifications = builder.AddProject<Projects.ECommerce_Notifications_API>("notifications")
     .WithEndpoint(
         name: "http",
         port: 5008,
@@ -91,6 +91,18 @@ builder.AddProject<Projects.ECommerce_Notifications_API>("notifications")
         isExternal: true)
     .WithExternalHttpEndpoints()
     .WithReference(serviceBus);
+
+var gateway = builder.AddProject<Projects.ECommerce_Gateway_API>("gateway")
+    .WithEndpoint(
+        name: "http",
+        port: 5000,
+        targetPort: 5000,
+        scheme: "http",
+        isExternal: true)
+    .WithExternalHttpEndpoints()
+    .WithReference(catalog)
+    .WithReference(identity)
+    .WithReference(notifications);
 
 // Required for aspire publish → docker-compose.yml (prevents Pitfall 3)
 builder.AddDockerComposeEnvironment("ecommerce-local");
