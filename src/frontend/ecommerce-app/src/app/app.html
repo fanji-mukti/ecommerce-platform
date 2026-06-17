@@ -1,0 +1,15 @@
+<mat-toolbar color="primary">
+  <a routerLink="/" class="app-logo">eCommerce</a>
+  <span class="toolbar-spacer"></span>
+  <a mat-button routerLink="/catalog" routerLinkActive="active-link">Catalog</a>
+  @if (isAuthenticated().isAuthenticated) {
+    <span class="username">{{ userData().userData?.name || userData().userData?.email }}</span>
+    <button mat-button (click)="signOut()">Sign Out</button>
+  } @else {
+    <a mat-button routerLink="/login">Sign In</a>
+  }
+</mat-toolbar>
+
+<main class="main-content">
+  <router-outlet />
+</main>
