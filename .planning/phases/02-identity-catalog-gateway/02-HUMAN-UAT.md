@@ -40,7 +40,7 @@ result: [pending]
 
 total: 6
 passed: 0
-issues: 1
+issues: 2
 pending: 5
 skipped: 0
 blocked: 5
@@ -54,3 +54,14 @@ debug_session:
   root_cause: "AppHost/Program.cs uses WithEndpoint(port: X, targetPort: X) on all project resources. In Aspire 10, setting port == targetPort on a non-container proxied resource is invalid — Aspire DCP can't bind both to the same port. Fix: replace all WithEndpoint patterns with WithHttpEndpoint(port: X) and remove the duplicate http endpoint on Payments."
   files_to_fix:
     - src/ecommerce.AppHost/Program.cs
+
+### Gap 2: Catalog and Notifications crash standalone — null ASB connection string
+status: failed
+debug_session:
+  error: "System.ArgumentNullException: Value cannot be null. (Parameter 'connectionString') at MassTransit.Configuration.ServiceBusHostConfigurator..ctor"
+  root_cause: "Catalog.API and Notifications.API both call cfg.Host(builder.Configuration.GetConnectionString(\"messaging\")) which returns null when running outside Aspire AppHost. Aspire only injects ConnectionStrings:messaging when orchestrating via AppHost. Fix: add appsettings.Development.json to both services with a fallback emulator connection string so they can start standalone; OR document that they must be run via AppHost and ensure AppHost (Gap 1) is fixed first."
+  files_to_fix:
+    - src/services/catalog/ECommerce.Catalog.API/Program.cs
+    - src/services/catalog/ECommerce.Catalog.API/appsettings.Development.json (new)
+    - src/services/notifications/ECommerce.Notifications.API/Program.cs
+    - src/services/notifications/ECommerce.Notifications.API/appsettings.Development.json (new)
