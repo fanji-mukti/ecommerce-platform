@@ -38,12 +38,12 @@ result: [pending]
 
 ## Summary
 
-total: 6
+total: 8
 passed: 0
-issues: 7
-pending: 5
+issues: 8
+pending: 8
 skipped: 0
-blocked: 5
+blocked: 8
 
 ## Gaps
 
@@ -99,6 +99,15 @@ debug_session:
   files_to_fix:
     - src/services/notifications/ECommerce.Notifications.Tests/Integration/CatalogSeededConsumerSteps.cs
 
+### Gap 7: Catalog unit tests test their own copy of the clamping logic, not the production code — zero regression value
+status: failed
+debug_session:
+  error: "No test failure at runtime — tests pass. Gap is structural: the tests verify nothing about ProductsEndpoints."
+  root_cause: "ProductValidationSteps.When_Validated() (lines 23-24) duplicates the pagination clamping logic inline rather than calling any production code: '_clampedPage = _page < 1 ? 1 : _page' and '_clampedPageSize = (_pageSize < 1 || _pageSize > 100) ? 12 : _pageSize'. The real logic lives in ProductsEndpoints.cs (lines 18-19) as inline statements inside the MapGet lambda and cannot be called directly. If the production clamping is changed (e.g. wrong boundary, different default), every unit test still passes because it tests the copied version. Fix option A: extract the clamping logic from ProductsEndpoints.cs into a static PaginationHelper.Clamp(int page, int pageSize) method, and have When_Validated call PaginationHelper.Clamp instead. Fix option B: delete the unit tests entirely — the integration tests (ProductsEndpointTests) already exercise the real endpoint boundary via HTTP and provide meaningful coverage. Adding a hollow unit test wrapper around duplicated logic is worse than no test because it implies coverage that does not exist."
+  files_to_fix:
+    - src/services/catalog/ECommerce.Catalog.Tests/Unit/ProductValidationSteps.cs
+    - src/services/catalog/ECommerce.Catalog.API/Features/Products/ProductsEndpoints.cs
+
 ### Gap 8: Angular components inject HttpClient directly — no service layer, API URLs duplicated across components
 status: failed
 debug_session:
@@ -110,12 +119,3 @@ debug_session:
     - src/frontend/ecommerce-app/src/app/features/auth/register/register.component.ts
     - src/frontend/ecommerce-app/src/app/core/services/catalog.service.ts (new)
     - src/frontend/ecommerce-app/src/app/core/services/identity.service.ts (new)
-
-### Gap 7: Catalog unit tests test their own copy of the clamping logic, not the production code — zero regression value
-status: failed
-debug_session:
-  error: "No test failure at runtime — tests pass. Gap is structural: the tests verify nothing about ProductsEndpoints."
-  root_cause: "ProductValidationSteps.When_Validated() (lines 23-24) duplicates the pagination clamping logic inline rather than calling any production code: '_clampedPage = _page < 1 ? 1 : _page' and '_clampedPageSize = (_pageSize < 1 || _pageSize > 100) ? 12 : _pageSize'. The real logic lives in ProductsEndpoints.cs (lines 18-19) as inline statements inside the MapGet lambda and cannot be called directly. If the production clamping is changed (e.g. wrong boundary, different default), every unit test still passes because it tests the copied version. Fix option A: extract the clamping logic from ProductsEndpoints.cs into a static PaginationHelper.Clamp(int page, int pageSize) method, and have When_Validated call PaginationHelper.Clamp instead. Fix option B: delete the unit tests entirely — the integration tests (ProductsEndpointTests) already exercise the real endpoint boundary via HTTP and provide meaningful coverage. Adding a hollow unit test wrapper around duplicated logic is worse than no test because it implies coverage that does not exist."
-  files_to_fix:
-    - src/services/catalog/ECommerce.Catalog.Tests/Unit/ProductValidationSteps.cs
-    - src/services/catalog/ECommerce.Catalog.API/Features/Products/ProductsEndpoints.cs
