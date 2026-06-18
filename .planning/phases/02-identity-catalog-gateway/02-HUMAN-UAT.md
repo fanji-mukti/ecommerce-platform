@@ -65,3 +65,11 @@ debug_session:
     - src/services/catalog/ECommerce.Catalog.API/appsettings.Development.json (new)
     - src/services/notifications/ECommerce.Notifications.API/Program.cs
     - src/services/notifications/ECommerce.Notifications.API/appsettings.Development.json (new)
+
+### Gap 3: Catalog integration tests fail — DbInitializer runs in test host and conflicts with test-managed seeding
+status: failed
+debug_session:
+  error: "ProductsEndpointTests fail despite Testcontainers Postgres running — suspected connection string or startup conflict"
+  root_cause: "CatalogWebApplicationFactory removes MassTransit descriptors but does NOT remove DbInitializer (registered as IHostedService, not matched by the MassTransit filter). DbInitializer runs during WebApplicationFactory startup: it migrates the DB, seeds 30 products, then calls IPublishEndpoint.Publish() followed by SaveChangesAsync() through the EF outbox interceptor. The outbox interceptor writes to OutboxMessage table and the drainer may not have started yet, leaving the DB in a conflicted state. Tests then call Given_CatalogHasProducts which clears and re-seeds with a raw CatalogDbContext (no outbox), causing a mismatch. Fix: add services.RemoveAll<DbInitializer>() to CatalogWebApplicationFactory, and remove AddEntityFrameworkOutbox from the in-memory MassTransit test registration (outbox is only needed for the real ASB transport)."
+  files_to_fix:
+    - src/services/catalog/ECommerce.Catalog.Tests/Integration/ProductsEndpointSteps.cs
