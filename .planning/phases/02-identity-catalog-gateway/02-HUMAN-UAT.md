@@ -40,7 +40,7 @@ result: [pending]
 
 total: 6
 passed: 0
-issues: 6
+issues: 7
 pending: 5
 skipped: 0
 blocked: 5
@@ -98,6 +98,18 @@ debug_session:
   root_cause: "CatalogSeededConsumerSteps.Given_HarnessWithInMemoryTransport builds a ServiceCollection with only AddLogging() and AddMassTransitTestHarness(). CatalogSeededConsumer has a primary constructor requiring NotificationsDbContext (used for db.SaveChangesAsync). The ServiceCollection has no AddDbContext<NotificationsDbContext> registration. When MassTransit's test harness creates a scope to resolve CatalogSeededConsumer for each incoming message, DI throws InvalidOperationException. The consumer body never executes, the harness Consumed list remains empty, and Then_ConsumerBodyInvokedExactlyOnce (consumed.Should().HaveCount(1)) fails with count 0. Fix: register an in-memory NotificationsDbContext in Given_HarnessWithInMemoryTransport (services.AddDbContext<NotificationsDbContext>(o => o.UseInMemoryDatabase('test'))) so the consumer can be resolved without requiring a real Postgres container."
   files_to_fix:
     - src/services/notifications/ECommerce.Notifications.Tests/Integration/CatalogSeededConsumerSteps.cs
+
+### Gap 8: Angular components inject HttpClient directly — no service layer, API URLs duplicated across components
+status: failed
+debug_session:
+  error: "No runtime failure — gap is architectural. API URL /api/catalog/products is hardcoded in two components independently; HTTP logic is embedded in the presentation layer."
+  root_cause: "Three components inject HttpClient directly and own their own HTTP calls: CatalogListComponent (loadProducts — http.get /api/catalog/products), ProductDetailComponent (ngOnInit — http.get /api/catalog/products/{id}), and RegisterComponent (onSubmit — http.post /api/identity/register). No CatalogService or IdentityService class exists. Consequences: (1) the base path /api/catalog/products is duplicated and must be updated in two places if the route changes; (2) HTTP concern is mixed into the presentation layer, making component unit tests require HttpClient mocking rather than a simple service stub; (3) retry, caching, and error-normalisation logic will be duplicated again when the Cart or Orders features reuse the same endpoints. Angular best practice is to isolate HTTP calls in @Injectable service classes (CatalogService, IdentityService) injected into components. Fix: create src/app/core/services/catalog.service.ts with getProducts(page, pageSize, category?) and getProduct(id) methods; create src/app/core/services/identity.service.ts with register(email, password) method; update CatalogListComponent, ProductDetailComponent, and RegisterComponent to inject the service instead of HttpClient."
+  files_to_fix:
+    - src/frontend/ecommerce-app/src/app/features/catalog/catalog-list/catalog-list.component.ts
+    - src/frontend/ecommerce-app/src/app/features/catalog/product-detail/product-detail.component.ts
+    - src/frontend/ecommerce-app/src/app/features/auth/register/register.component.ts
+    - src/frontend/ecommerce-app/src/app/core/services/catalog.service.ts (new)
+    - src/frontend/ecommerce-app/src/app/core/services/identity.service.ts (new)
 
 ### Gap 7: Catalog unit tests test their own copy of the clamping logic, not the production code — zero regression value
 status: failed
