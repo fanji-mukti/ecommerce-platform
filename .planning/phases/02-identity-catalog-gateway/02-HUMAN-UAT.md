@@ -1,20 +1,20 @@
 ---
-status: partial
+status: diagnosed
 phase: 02-identity-catalog-gateway
 source: [02-VERIFICATION.md]
 started: 2026-06-17T00:00:00Z
-updated: 2026-06-17T00:00:00Z
+updated: 2026-06-19T00:00:00Z
 ---
 
 ## Current Test
 
-[awaiting human testing]
+App shell rendering — blocked by AppHost crash
 
 ## Tests
 
 ### 1. App shell renders
 expected: App shell renders with mat-toolbar, 'eCommerce' logo, 'Catalog' nav link, and 'Sign In' button; router-outlet is visible
-result: [pending]
+result: failed — AppHost crashes before any service starts
 
 ### 2. Catalog browse without login
 expected: Product grid loads with 'Browse Products' h1, category filter chips (Electronics, Clothing, Books, Home, Sports), and paginated product cards
@@ -40,9 +40,17 @@ result: [pending]
 
 total: 6
 passed: 0
-issues: 0
-pending: 6
+issues: 1
+pending: 5
 skipped: 0
-blocked: 0
+blocked: 5
 
 ## Gaps
+
+### Gap 1: AppHost crashes on startup — cannot run any UAT
+status: failed
+debug_session:
+  error: "System.InvalidOperationException: The endpoint 'http' for resource 'catalog' requested a proxy (IsProxied is true). Non-container resources cannot be proxied when both TargetPort and Port are specified with the same value."
+  root_cause: "AppHost/Program.cs uses WithEndpoint(port: X, targetPort: X) on all project resources. In Aspire 10, setting port == targetPort on a non-container proxied resource is invalid — Aspire DCP can't bind both to the same port. Fix: replace all WithEndpoint patterns with WithHttpEndpoint(port: X) and remove the duplicate http endpoint on Payments."
+  files_to_fix:
+    - src/ecommerce.AppHost/Program.cs
