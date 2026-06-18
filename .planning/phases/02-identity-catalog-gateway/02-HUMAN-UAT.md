@@ -40,7 +40,7 @@ result: [pending]
 
 total: 6
 passed: 0
-issues: 5
+issues: 6
 pending: 5
 skipped: 0
 blocked: 5
@@ -98,3 +98,12 @@ debug_session:
   root_cause: "CatalogSeededConsumerSteps.Given_HarnessWithInMemoryTransport builds a ServiceCollection with only AddLogging() and AddMassTransitTestHarness(). CatalogSeededConsumer has a primary constructor requiring NotificationsDbContext (used for db.SaveChangesAsync). The ServiceCollection has no AddDbContext<NotificationsDbContext> registration. When MassTransit's test harness creates a scope to resolve CatalogSeededConsumer for each incoming message, DI throws InvalidOperationException. The consumer body never executes, the harness Consumed list remains empty, and Then_ConsumerBodyInvokedExactlyOnce (consumed.Should().HaveCount(1)) fails with count 0. Fix: register an in-memory NotificationsDbContext in Given_HarnessWithInMemoryTransport (services.AddDbContext<NotificationsDbContext>(o => o.UseInMemoryDatabase('test'))) so the consumer can be resolved without requiring a real Postgres container."
   files_to_fix:
     - src/services/notifications/ECommerce.Notifications.Tests/Integration/CatalogSeededConsumerSteps.cs
+
+### Gap 7: Catalog unit tests test their own copy of the clamping logic, not the production code — zero regression value
+status: failed
+debug_session:
+  error: "No test failure at runtime — tests pass. Gap is structural: the tests verify nothing about ProductsEndpoints."
+  root_cause: "ProductValidationSteps.When_Validated() (lines 23-24) duplicates the pagination clamping logic inline rather than calling any production code: '_clampedPage = _page < 1 ? 1 : _page' and '_clampedPageSize = (_pageSize < 1 || _pageSize > 100) ? 12 : _pageSize'. The real logic lives in ProductsEndpoints.cs (lines 18-19) as inline statements inside the MapGet lambda and cannot be called directly. If the production clamping is changed (e.g. wrong boundary, different default), every unit test still passes because it tests the copied version. Fix option A: extract the clamping logic from ProductsEndpoints.cs into a static PaginationHelper.Clamp(int page, int pageSize) method, and have When_Validated call PaginationHelper.Clamp instead. Fix option B: delete the unit tests entirely — the integration tests (ProductsEndpointTests) already exercise the real endpoint boundary via HTTP and provide meaningful coverage. Adding a hollow unit test wrapper around duplicated logic is worse than no test because it implies coverage that does not exist."
+  files_to_fix:
+    - src/services/catalog/ECommerce.Catalog.Tests/Unit/ProductValidationSteps.cs
+    - src/services/catalog/ECommerce.Catalog.API/Features/Products/ProductsEndpoints.cs
