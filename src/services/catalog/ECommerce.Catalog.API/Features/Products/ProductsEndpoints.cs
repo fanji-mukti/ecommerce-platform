@@ -15,8 +15,7 @@ public static class ProductsEndpoints
             CancellationToken ct) =>
         {
             // Input validation — clamp bounds (ASVS V5, T-02-03-02)
-            if (page < 1) page = 1;
-            if (pageSize < 1 || pageSize > 100) pageSize = 12;
+            (page, pageSize) = PaginationHelper.Clamp(page, pageSize);
 
             var query = db.Products.AsQueryable();
             if (!string.IsNullOrEmpty(category))
