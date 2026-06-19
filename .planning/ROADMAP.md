@@ -61,7 +61,7 @@ Plans:
 3. Angular shell at `/catalog`, `/product/:id`, `/login`, `/register` renders products and authenticates users end-to-end through the YARP gateway.
 4. Catalog service publishes a domain event (e.g. `ProductViewed` or `CatalogSeeded`) through MassTransit transactional outbox and the consuming side deduplicates redelivered messages via idempotent inbox — verified with a forced redelivery test.
 5. Seeded demo user accounts allow the demo to run without manual registration.
-**Plans:** 7/7 plans complete
+**Plans:** 12/12 plans complete
 Plans:
 - [x] 02-01-PLAN.md — CatalogSeeded contract + Tests.Common shared infrastructure (Testcontainers, builders)
 - [x] 02-02-PLAN.md — Identity service: OpenIddict PKCE, register/me endpoints, Razor Pages login, seeder, tests
@@ -145,7 +145,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundations | 5/5 | Complete    | 2026-06-11 |
-| 2. Identity, Catalog & Gateway | 7/7 | Complete   | 2026-06-17 |
+| 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 0/? | Not started | - |
 | 4. Checkout Saga & Payments | 0/? | Not started | - |
 | 5. Fulfillment & Notifications | 0/? | Not started | - |
