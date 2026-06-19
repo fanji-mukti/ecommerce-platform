@@ -1,8 +1,10 @@
 using ECommerce.Catalog.Events.V1;
 using ECommerce.Notifications.API.Consumers;
+using ECommerce.Notifications.API.Data;
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ECommerce.Notifications.Tests.Integration;
@@ -18,6 +20,12 @@ public class CatalogSeededConsumerSteps : IAsyncDisposable
 
         // Logging (optional for test output)
         services.AddLogging();
+
+        // Gap 6 fix: register NotificationsDbContext so CatalogSeededConsumer can resolve it.
+        // CatalogSeededConsumer has a primary constructor requiring NotificationsDbContext;
+        // without this, DI throws InvalidOperationException when MassTransit creates a consumer scope.
+        services.AddDbContext<NotificationsDbContext>(o =>
+            o.UseInMemoryDatabase("notifications-consumer-test"));
 
         services.AddMassTransitTestHarness(x =>
         {
