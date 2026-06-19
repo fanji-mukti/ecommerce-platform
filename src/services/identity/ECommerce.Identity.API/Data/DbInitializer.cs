@@ -42,8 +42,8 @@ public class DbInitializer(IServiceProvider serviceProvider) : IHostedService
 
         // Seed demo users
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-        await SeedUserIfNotExists(userManager, "demo@example.com", "demo123", ct);
-        await SeedUserIfNotExists(userManager, "admin@example.com", "admin123", ct);
+        await SeedUserIfNotExists(userManager, "demo@example.com", "Demo123!", ct);
+        await SeedUserIfNotExists(userManager, "admin@example.com", "Admin123!", ct);
     }
 
     private static async Task SeedUserIfNotExists(
@@ -60,7 +60,10 @@ public class DbInitializer(IServiceProvider serviceProvider) : IHostedService
                 Email = email,
                 EmailConfirmed = true
             };
-            await um.CreateAsync(user, password);
+            var result = await um.CreateAsync(user, password);
+            if (!result.Succeeded)
+                throw new InvalidOperationException(
+                    $"Failed to seed user '{email}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
     }
 

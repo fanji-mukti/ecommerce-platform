@@ -38,6 +38,8 @@ try
     builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
         options.Lockout.MaxFailedAccessAttempts = 5; // ASVS T-02-02-02: brute force protection
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
     })
         .AddEntityFrameworkStores<IdentityDbContext>()
         .AddDefaultTokenProviders();
