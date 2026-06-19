@@ -1,12 +1,12 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { CurrencyPipe } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { Product } from '../../../shared/models/product.model';
+import { CatalogService } from '../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -23,7 +23,7 @@ import { Product } from '../../../shared/models/product.model';
 })
 export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private http = inject(HttpClient);
+  private catalogService = inject(CatalogService);
 
   product = signal<Product | null>(null);
   isLoading = signal<boolean>(false);
@@ -50,7 +50,7 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
     this.isLoading.set(true);
-    this.http.get<Product>(`/api/catalog/products/${id}`).subscribe({
+    this.catalogService.getProduct(id).subscribe({
       next: (product) => {
         this.product.set(product);
         this.isLoading.set(false);
