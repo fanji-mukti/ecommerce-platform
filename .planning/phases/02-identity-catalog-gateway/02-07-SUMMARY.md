@@ -88,6 +88,15 @@ None - no external service configuration required.
 - This unblocks all 6 UAT scenarios that previously could not run because the AppHost crashed before any service started
 - Remaining gap-closure plans (08-11) can now be verified under a running AppHost
 
+## Self-Check: PASSED
+
+- `src/ecommerce.AppHost/Program.cs` — FOUND
+- `.planning/phases/02-identity-catalog-gateway/02-07-SUMMARY.md` — FOUND
+- Commit `5408c89` — FOUND (fix: replace WithEndpoint proxy patterns)
+- WithEndpoint count: 0 (all removed)
+- WithHttpEndpoint count: 9 (one per service)
+- WithExternalHttpEndpoints count: 0 (all removed)
+
 ---
 *Phase: 02-identity-catalog-gateway*
 *Completed: 2026-06-19*
