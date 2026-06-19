@@ -1,11 +1,11 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
-import { Product, PagedResult } from '../../../shared/models/product.model';
+import { Product } from '../../../shared/models/product.model';
 import { ProductCardComponent } from '../product-card/product-card.component';
+import { CatalogService } from '../../../core/services/catalog.service';
 
 @Component({
   selector: 'app-catalog-list',
@@ -21,7 +21,7 @@ import { ProductCardComponent } from '../product-card/product-card.component';
   styleUrl: './catalog-list.component.scss',
 })
 export class CatalogListComponent implements OnInit {
-  private http = inject(HttpClient);
+  private catalogService = inject(CatalogService);
 
   products = signal<Product[]>([]);
   isLoading = signal<boolean>(false);
@@ -63,13 +63,9 @@ export class CatalogListComponent implements OnInit {
     this.hasError.set(false);
 
     const page = this.currentPage() + 1;
-    let url = `/api/catalog/products?page=${page}&pageSize=${this.pageSize}`;
     const category = this.selectedCategory();
-    if (category) {
-      url += `&category=${encodeURIComponent(category)}`;
-    }
 
-    this.http.get<PagedResult<Product>>(url).subscribe({
+    this.catalogService.getProducts(page, this.pageSize, category).subscribe({
       next: (result) => {
         this.products.set(result.items);
         this.totalCount.set(result.totalCount);

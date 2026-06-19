@@ -1,6 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { IdentityService } from '../../../core/services/identity.service';
 
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
@@ -36,7 +36,7 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
+  private identityService = inject(IdentityService);
   private router = inject(Router);
 
   isSubmitting = signal<boolean>(false);
@@ -71,12 +71,12 @@ export class RegisterComponent {
     this.isSubmitting.set(true);
     this.generalError.set(null);
 
-    // Security: POST body contains ONLY email and password — no other fields (T-02-06b-01)
+    // Security: POST body contains ONLY email and password — no other fields (T-02-06b-01, T-02-11-01)
     const email = this.emailControl?.value ?? '';
     const password = this.passwordControl?.value ?? '';
 
-    this.http
-      .post('/api/identity/register', { email, password }, { observe: 'response' })
+    this.identityService
+      .register(email, password)
       .subscribe({
         next: (response) => {
           this.isSubmitting.set(false);
