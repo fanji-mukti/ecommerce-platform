@@ -44,15 +44,16 @@ internal sealed class CatalogWebApplicationFactory(string connectionString)
             foreach (var d in descriptors)
                 services.Remove(d);
 
-            // Replace with in-memory transport so no ASB connectivity is needed
+            // Gap 3 fix: remove DbInitializer so it does not run during test host startup.
+            // DbInitializer migrates the DB and seeds 30 products via the EF outbox interceptor,
+            // conflicting with Given_CatalogHasProducts which clears and re-seeds directly.
+            services.RemoveAll<ECommerce.Catalog.API.Data.DbInitializer>();
+
+            // Replace with in-memory transport so no ASB connectivity is needed.
+            // Outbox registration is intentionally omitted — the EF outbox only makes sense
+            // with a real ASB transport and interferes with raw CatalogDbContext seeding.
             services.AddMassTransit(x =>
             {
-                x.AddEntityFrameworkOutbox<CatalogDbContext>(o =>
-                {
-                    o.UsePostgres();
-                    o.UseBusOutbox();
-                });
-
                 x.UsingInMemory((context, cfg) =>
                 {
                     cfg.ConfigureEndpoints(context);
