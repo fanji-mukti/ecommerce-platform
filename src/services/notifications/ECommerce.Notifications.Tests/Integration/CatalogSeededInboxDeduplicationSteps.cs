@@ -80,8 +80,12 @@ public class CatalogSeededInboxDeduplicationSteps : IAsyncLifetime
             ItemCount: 25,
             SeededAt: DateTimeOffset.UtcNow);
 
-        await _harness!.Bus.Publish(message);
-        await _harness!.Bus.Publish(message);
+        // Gap 4 fix: set transport-level MessageId to the same value on both publishes.
+        // MassTransit generates a fresh Guid transport MessageId per Publish call by default,
+        // so the inbox would store two rows. Pinning both to the same messageId ensures the
+        // EF Core inbox deduplicates and stores exactly one InboxState row.
+        await _harness!.Bus.Publish(message, ctx => ctx.MessageId = messageId);
+        await _harness!.Bus.Publish(message, ctx => ctx.MessageId = messageId);
 
         await _harness!.InactivityTask;
     }
