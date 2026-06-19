@@ -1,3 +1,5 @@
+using ECommerce.Catalog.API.Features.Products;
+
 namespace ECommerce.Catalog.Tests.Unit;
 
 /// <summary>
@@ -19,9 +21,7 @@ public class ProductValidationSteps
 
     public void When_Validated()
     {
-        // Mirror the clamping logic from ProductsEndpoints
-        _clampedPage = _page < 1 ? 1 : _page;
-        _clampedPageSize = (_pageSize < 1 || _pageSize > 100) ? 12 : _pageSize;
+        (_clampedPage, _clampedPageSize) = PaginationHelper.Clamp(_page, _pageSize);
     }
 
     public int Then_PageIs() => _clampedPage;
