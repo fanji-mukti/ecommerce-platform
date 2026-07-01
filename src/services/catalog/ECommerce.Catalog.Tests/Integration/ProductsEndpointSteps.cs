@@ -5,7 +5,6 @@ using ECommerce.Catalog.API.Features.Products;
 using ECommerce.Tests.Common;
 using ECommerce.Tests.Common.Builders;
 using FluentAssertions;
-using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -36,29 +35,10 @@ internal sealed class CatalogWebApplicationFactory(string connectionString)
 
         builder.ConfigureServices(services =>
         {
-            // Remove the real MassTransit registration added in Program.cs
-            var descriptors = services
-                .Where(d => d.ServiceType.FullName?.StartsWith("MassTransit") == true ||
-                            d.ServiceType.FullName?.Contains("IBus") == true)
-                .ToList();
-            foreach (var d in descriptors)
-                services.Remove(d);
-
-            // Gap 3 fix: remove DbInitializer so it does not run during test host startup.
-            // DbInitializer migrates the DB and seeds 30 products via the EF outbox interceptor,
-            // conflicting with Given_CatalogHasProducts which clears and re-seeds directly.
+            // Remove DbInitializer so it does not run during test host startup.
+            // DbInitializer migrates the DB and also seeds products via the EF outbox,
+            // which can conflict with the test helpers that clear and seed the DB.
             services.RemoveAll<ECommerce.Catalog.API.Data.DbInitializer>();
-
-            // Replace with in-memory transport so no ASB connectivity is needed.
-            // Outbox registration is intentionally omitted — the EF outbox only makes sense
-            // with a real ASB transport and interferes with raw CatalogDbContext seeding.
-            services.AddMassTransit(x =>
-            {
-                x.UsingInMemory((context, cfg) =>
-                {
-                    cfg.ConfigureEndpoints(context);
-                });
-            });
         });
     }
 }

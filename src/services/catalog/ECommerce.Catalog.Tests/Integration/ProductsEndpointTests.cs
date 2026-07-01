@@ -37,6 +37,7 @@ public class ProductsEndpointTests(PostgresFixture fixture) : IClassFixture<Post
     public async Task GetProductById_WhenNotFound_Returns404()
     {
         var unknownId = Guid.NewGuid();
+        await _steps.Given_CatalogHasProducts(count: 15);
         var response = await _steps.When_GetProductByIdIsCalled(unknownId);
         _steps.Then_ResponseIs404(response);
     }
@@ -45,6 +46,7 @@ public class ProductsEndpointTests(PostgresFixture fixture) : IClassFixture<Post
     public async Task GetProductById_WhenNotFound_ReturnsErrorMessage()
     {
         var unknownId = Guid.NewGuid();
+        await _steps.Given_CatalogHasProducts(count: 15);
         var response = await _steps.When_GetProductByIdIsCalled(unknownId);
         await _steps.Then_ResponseContainsErrorMessage(response, "Product not found.");
     }

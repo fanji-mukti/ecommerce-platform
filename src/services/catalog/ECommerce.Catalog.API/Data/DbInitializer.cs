@@ -20,16 +20,16 @@ public class DbInitializer(IServiceProvider serviceProvider) : IHostedService
         db.Products.AddRange(products);
 
         // Publish CatalogSeeded via MassTransit transactional outbox
-        var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-        var seedId = Guid.NewGuid();
-        await publishEndpoint.Publish(new CatalogSeeded(
-            MessageId: Guid.NewGuid(),
-            CorrelationId: Guid.NewGuid(),
-            CausationId: Guid.Empty,
-            OccurredAt: DateTimeOffset.UtcNow,
-            SeedId: seedId,
-            ItemCount: products.Count,
-            SeededAt: DateTimeOffset.UtcNow), ct);
+        //var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+        //var seedId = Guid.NewGuid();
+        //await publishEndpoint.Publish(new CatalogSeeded(
+        //    MessageId: Guid.NewGuid(),
+        //    CorrelationId: Guid.NewGuid(),
+        //    CausationId: Guid.Empty,
+        //    OccurredAt: DateTimeOffset.UtcNow,
+        //    SeedId: seedId,
+        //    ItemCount: products.Count,
+        //    SeededAt: DateTimeOffset.UtcNow), ct);
 
         await db.SaveChangesAsync(ct); // commits product rows + outbox message atomically
     }
