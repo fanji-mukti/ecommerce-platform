@@ -1,0 +1,65 @@
+<div class="product-detail-page">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  }
+
+  @if (notFound() && !isLoading()) {
+    <div class="not-found-state">
+      <h1>Product not found</h1>
+      <p>This product doesn't exist or may have been removed. Return to the catalog to keep browsing.</p>
+      <a mat-button routerLink="/catalog">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Catalog
+      </a>
+    </div>
+  }
+
+  @if (product(); as p) {
+    <div class="product-layout">
+      <div class="product-image">
+        @if (p.imageUrl) {
+          <img [src]="p.imageUrl" [alt]="'Photo of ' + p.name" />
+        } @else {
+          <div class="image-placeholder" aria-hidden="true"></div>
+        }
+      </div>
+
+      <div class="product-details">
+        <a mat-button routerLink="/catalog" class="back-link">
+          <mat-icon>arrow_back</mat-icon>
+          Back to Catalog
+        </a>
+
+        <h1>{{ p.name }}</h1>
+
+        <p class="category">
+          <mat-chip-set>
+            <mat-chip>{{ p.category }}</mat-chip>
+          </mat-chip-set>
+        </p>
+
+        <p class="price">{{ p.price | currency: 'USD' }}</p>
+
+        <mat-chip-set class="stock-badge">
+          <mat-chip [color]="stockColor() || null" [disabled]="p.stockQuantity === 0">
+            {{ stockLabel() }}
+          </mat-chip>
+        </mat-chip-set>
+
+        @if (p.description) {
+          <div class="description">
+            @for (paragraph of p.description.split('\n'); track $index) {
+              <p>{{ paragraph }}</p>
+            }
+          </div>
+        }
+
+        <button mat-raised-button color="primary" disabled>
+          Add to Cart — Coming Soon
+        </button>
+      </div>
+    </div>
+  }
+</div>

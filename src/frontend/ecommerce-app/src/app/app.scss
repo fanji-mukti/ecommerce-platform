@@ -1,0 +1,27 @@
+.app-logo {
+  color: white;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 500;
+  margin-right: var(--space-md);
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.username {
+  margin-right: var(--space-sm);
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.active-link {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.main-content {
+  padding: var(--space-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+}

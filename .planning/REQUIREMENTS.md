@@ -7,9 +7,9 @@
 
 ### Catalog
 
-- [ ] **CAT-01**: User can list products with pagination and category filtering
-- [ ] **CAT-02**: User can view product detail by ID
-- [ ] **CAT-03**: System provides seeded demo catalog of 20–50 SKUs with price and stock
+- [x] **CAT-01**: User can list products with pagination and category filtering
+- [x] **CAT-02**: User can view product detail by ID
+- [x] **CAT-03**: System provides seeded demo catalog of 20–50 SKUs with price and stock
 
 ### Cart
 
@@ -20,10 +20,10 @@
 
 ### Identity
 
-- [ ] **IDN-01**: User can register with email and password
-- [ ] **IDN-02**: User can log in and receive a JWT token (via OpenIddict)
-- [ ] **IDN-03**: User can retrieve their current profile (GET /me)
-- [ ] **IDN-04**: System provides seeded demo user accounts for demos
+- [x] **IDN-01**: User can register with email and password
+- [x] **IDN-02**: User can log in and receive a JWT token (via OpenIddict)
+- [x] **IDN-03**: User can retrieve their current profile (GET /me)
+- [x] **IDN-04**: System provides seeded demo user accounts for demos
 
 ### Orders
 
@@ -64,8 +64,8 @@
 
 ### Infrastructure & Cross-Cutting
 
-- [ ] **INF-01**: Every publishing service uses MassTransit transactional outbox for guaranteed at-least-once delivery
-- [ ] **INF-02**: Every consuming service uses idempotent inbox to deduplicate redelivered messages
+- [x] **INF-01**: Every publishing service uses MassTransit transactional outbox for guaranteed at-least-once delivery
+- [x] **INF-02**: Every consuming service uses idempotent inbox to deduplicate redelivered messages
 - [x] **INF-03**: All services emit OpenTelemetry traces and structured logs with correlation ID across service boundaries
 - [x] **INF-04**: All services expose GET /health endpoints for readiness and liveness probes
 
@@ -88,10 +88,10 @@
 
 ### Angular Frontend
 
-- [ ] **FE-01**: User can browse the product catalog and view product detail (/catalog, /product/:id)
+- [x] **FE-01**: User can browse the product catalog and view product detail (/catalog, /product/:id)
 - [ ] **FE-02**: User can manage their cart (/cart)
 - [ ] **FE-03**: User can complete checkout and see order status updating in real-time via polling (/checkout, /orders/:id)
-- [ ] **FE-04**: User can register and log in (/register, /login)
+- [x] **FE-04**: User can register and log in (/register, /login)
 
 ---
 
@@ -148,17 +148,17 @@
 | ADR-02 | Phase 1 | Complete |
 | INF-03 | Phase 1 | Complete |
 | INF-04 | Phase 1 | Complete |
-| IDN-01 | Phase 2 | Pending |
-| IDN-02 | Phase 2 | Pending |
-| IDN-03 | Phase 2 | Pending |
-| IDN-04 | Phase 2 | Pending |
-| CAT-01 | Phase 2 | Pending |
-| CAT-02 | Phase 2 | Pending |
-| CAT-03 | Phase 2 | Pending |
-| FE-01 | Phase 2 | Pending |
-| FE-04 | Phase 2 | Pending |
-| INF-01 | Phase 2 | Pending |
-| INF-02 | Phase 2 | Pending |
+| IDN-01 | Phase 2 | Complete |
+| IDN-02 | Phase 2 | Complete |
+| IDN-03 | Phase 2 | Complete |
+| IDN-04 | Phase 2 | Complete |
+| CAT-01 | Phase 2 | Complete |
+| CAT-02 | Phase 2 | Complete |
+| CAT-03 | Phase 2 | Complete |
+| FE-01 | Phase 2 | Complete |
+| FE-04 | Phase 2 | Complete |
+| INF-01 | Phase 2 | Complete |
+| INF-02 | Phase 2 | Complete |
 | CART-01 | Phase 3 | Pending |
 | CART-02 | Phase 3 | Pending |
 | CART-03 | Phase 3 | Pending |

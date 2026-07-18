@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 01 shipped — PR #1
-last_updated: 2026-06-16
+status: ready_to_plan
+last_updated: "2026-06-19T01:30:35.187Z"
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 17
+  completed_plans: 12
   percent: 17
 stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
 ---
@@ -23,7 +23,7 @@ stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
 
 **Core Value:** A working checkout saga that spans Catalog, Cart, Orders, Payments, Fulfillment, and Notifications — demonstrating event-driven coordination between microservices without direct coupling.
 
-**Current Focus:** Phase 2 — identity, catalog & gateway
+**Current Focus:** Phase 02 — identity-catalog-gateway
 
 **Mode:** mvp (vertical slices)
 **Granularity:** coarse
@@ -34,8 +34,8 @@ stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
+Phase: 02 (identity-catalog-gateway) — EXECUTING
+Plan: 1 of 12
 | Field | Value |
 |-------|-------|
 | Active phase | Phase 1: Foundations |
@@ -73,6 +73,13 @@ Plan: Not started
 | Open blockers | 0 |
 
 ---
+| Phase 02 P01 | 15min | 2 tasks | 6 files |
+| Phase 02 P02 | 25min | 2 tasks | 21 files |
+| Phase 02 P05 | 5min | 2 tasks | 8 files |
+| Phase 02 P03 | 30min | 2 tasks | 17 files |
+| Phase 02 P04 | 20min | 2 tasks | 13 files |
+| Phase 02 P06a | 12 | 1 tasks | 27 files |
+| Phase 02 P06b | 6 | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -127,3 +134,13 @@ Plan: Not started
 ---
 
 *State file initialised: 2026-05-30 by gsd-roadmapper agent.*
+
+## Decisions
+
+- [Phase ?]: Used CatalogWebApplicationFactory with in-memory MassTransit transport for integration tests (no ASB needed in CI)
+- [Phase ?]: Used MassTransit.TestFramework (not MassTransit.Testing) — correct NuGet package name for v8 test harness
+- [Phase ?]: Transport-level MessageId override required in InMemory harness tests to trigger deduplication — ctx.MessageId = messageId in publish callback
+- [Phase ?]: Angular Material 20.x pinned (not latest 22.x) due to Angular 20 peer dep requirements; prebuilt indigo-pink.css used (M3 SCSS API changed)
+- [Phase ?]: Used @analogjs/vitest-angular/setup-testbed (not setup-zone) for zoneless Angular TestBed initialization in component tests
+- [Phase ?]: RegisterComponent strictly posts {email, password} only to /api/identity/register — no role or isAdmin fields (mass assignment protection)
+- [Phase ?]: Category list derived via computed() from loaded products — no separate API call needed for Phase 2

@@ -23,6 +23,7 @@
     <ProjectReference Include="../services/payments/ECommerce.Payments.API/ECommerce.Payments.API.csproj" />
     <ProjectReference Include="../services/fulfillment/ECommerce.Fulfillment.API/ECommerce.Fulfillment.API.csproj" />
     <ProjectReference Include="../services/notifications/ECommerce.Notifications.API/ECommerce.Notifications.API.csproj" />
+    <ProjectReference Include="../services/gateway/ECommerce.Gateway.API/ECommerce.Gateway.API.csproj" />
   </ItemGroup>
 
 </Project>

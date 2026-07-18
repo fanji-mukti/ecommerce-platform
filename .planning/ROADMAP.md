@@ -10,7 +10,7 @@
 ## Phases
 
 - [x] **Phase 1: Foundations** — Lock contracts shape, Compose baseline, Aspire AppHost, OpenTelemetry, and first 8 ADRs (completed 2026-06-03)
-- [ ] **Phase 2: Identity, Catalog & Gateway** — User can register/login and browse catalog through YARP gateway with outbox/inbox wired from day one
+- [x] **Phase 2: Identity, Catalog & Gateway** — User can register/login and browse catalog through YARP gateway with outbox/inbox wired from day one (completed 2026-06-17)
 - [ ] **Phase 3: Cart & Orders Skeleton** — Per-user Redis cart and Orders aggregate with CQRS read model and state machine
 - [ ] **Phase 4: Checkout Saga & Payments** — Headline demo: place order triggers saga, deterministic failure shows live compensation
 - [ ] **Phase 5: Fulfillment & Notifications** — Complete happy-path and compensation flows end-to-end with in-app notification inbox
@@ -61,8 +61,26 @@ Plans:
 3. Angular shell at `/catalog`, `/product/:id`, `/login`, `/register` renders products and authenticates users end-to-end through the YARP gateway.
 4. Catalog service publishes a domain event (e.g. `ProductViewed` or `CatalogSeeded`) through MassTransit transactional outbox and the consuming side deduplicates redelivered messages via idempotent inbox — verified with a forced redelivery test.
 5. Seeded demo user accounts allow the demo to run without manual registration.
-**Plans:** TBD
+**Plans:** 12/12 plans complete
+Plans:
+- [x] 02-01-PLAN.md — CatalogSeeded contract + Tests.Common shared infrastructure (Testcontainers, builders)
+- [x] 02-02-PLAN.md — Identity service: OpenIddict PKCE, register/me endpoints, Razor Pages login, seeder, tests
+- [x] 02-03-PLAN.md — Catalog service: Product entity, EF Core, MassTransit outbox, paginated endpoints, seeder, tests
+- [x] 02-04-PLAN.md — Notifications service: MassTransit inbox consumer, forced redelivery test (D-14)
+- [x] 02-05-PLAN.md — YARP gateway service: new 9th service, Aspire AppHost wiring (10th resource), CI update
+- [ ] 02-06-PLAN.md — Angular shell: Angular Material 20, catalog pages, auth pages, OIDC wiring, proxy config
 **UI hint:** yes
+
+**Wave 1** *(parallel)*: 02-01, 02-02, 02-04, 02-05
+**Wave 1 with 02-01 dependency**: 02-03
+**Wave 2** *(blocked on Wave 1)*: 02-06
+
+**Cross-cutting constraints:**
+- All MassTransit packages pinned at Version="8.3.6" — never floating (ADR-0006)
+- No MassTransit in Cart, Orders, Checkout, Payments, Fulfillment services until their implementing phases
+- Angular runs via ng serve (not in Aspire AppHost) — proxy.conf.json routes /api/* to gateway port 5000
+- OIDC flows (browser→Identity) go directly to Identity service, not through YARP
+- DB-per-service: Identity DB, CatalogDB, NotificationsDB are fully isolated
 
 ### Phase 3: Cart & Orders Skeleton
 **Goal:** A logged-in user can build a per-user cart with price snapshots and view their orders history through a CQRS read model backed by an Orders state machine — no checkout yet.
@@ -127,7 +145,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundations | 5/5 | Complete    | 2026-06-11 |
-| 2. Identity, Catalog & Gateway | 0/? | Not started | - |
+| 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 0/? | Not started | - |
 | 4. Checkout Saga & Payments | 0/? | Not started | - |
 | 5. Fulfillment & Notifications | 0/? | Not started | - |
@@ -147,3 +165,4 @@ Every v1 requirement maps to exactly one phase. See `REQUIREMENTS.md` ## Traceab
 
 *Roadmap created: 2026-05-30*
 *Phase 1 planned: 2026-06-03*
+*Phase 2 planned: 2026-06-17*
