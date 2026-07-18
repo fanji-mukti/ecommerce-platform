@@ -11,6 +11,7 @@ var serviceBus = builder.AddAzureServiceBus("messaging")
 var catalog = builder.AddProject<Projects.ECommerce_Catalog_API>("catalog")
     .WithHttpEndpoint(port: 5001)
     .WithReference(postgres)
+    .WaitFor(postgres)
     .WithReference(serviceBus);
 
 builder.AddProject<Projects.ECommerce_Cart_API>("cart")
@@ -31,7 +32,8 @@ builder.AddProject<Projects.ECommerce_Orders_API>("orders")
 
 var identity = builder.AddProject<Projects.ECommerce_Identity_API>("identity")
     .WithHttpEndpoint(port: 5005)
-    .WithReference(postgres);
+    .WithReference(postgres)
+    .WaitFor(postgres);
 
 builder.AddProject<Projects.ECommerce_Payments_API>("payments")
     .WithHttpEndpoint(port: 5006)
