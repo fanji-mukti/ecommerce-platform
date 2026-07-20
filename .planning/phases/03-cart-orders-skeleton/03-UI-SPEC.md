@@ -1,7 +1,7 @@
 ---
 phase: 3
 slug: cart-orders-skeleton
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-21
@@ -27,6 +27,8 @@ created: 2026-07-21
 | Font | Roboto (Google Fonts, loaded in `src/styles.scss`), weights 400/500/700 available; Phase 3 uses only 400 and 500 |
 
 Source: detected from `src/frontend/ecommerce-app/src/styles.scss`, `src/app/app.scss`, and Phase 2 catalog/product-detail components. Not re-asked — carried forward as-is.
+
+**Visual hierarchy / focal point:** The line-item list is the primary focal point on `/cart` — it occupies the majority of the viewport and is read top-to-bottom first. The Order Summary panel is the secondary focal point, positioned to the side (desktop) or below the list (mobile), anchored by the grand total in Display size (24px/400) to draw the eye once line items are scanned. The disabled "Proceed to Checkout — Coming Soon" CTA sits at the bottom of the summary panel, intentionally de-emphasized (disabled state) since it is not the actionable element in Phase 3.
 
 ---
 
@@ -132,11 +134,11 @@ Not applicable — Angular Material 20 component library (non-shadcn ecosystem).
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS (focal-point statement added post-review to resolve initial FLAG)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-07-21
