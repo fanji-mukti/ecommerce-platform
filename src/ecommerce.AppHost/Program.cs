@@ -6,6 +6,14 @@ var redis = builder.AddRedis("redis");
 var serviceBus = builder.AddAzureServiceBus("messaging")
     .RunAsEmulator();
 
+// identity is declared here (before catalog/cart/orders) because C# top-level
+// statements execute in declaration order, and cart/orders both need identity
+// in scope for .WithReference(identity) (JWT authority resolution).
+var identity = builder.AddProject<Projects.ECommerce_Identity_API>("identity")
+    .WithHttpEndpoint(port: 5005)
+    .WithReference(postgres)
+    .WaitFor(postgres);
+
 // Service stubs — Aspire derives class name by replacing dots with underscores:
 // ECommerce.Catalog.API.csproj → Projects.ECommerce_Catalog_API
 var catalog = builder.AddProject<Projects.ECommerce_Catalog_API>("catalog")
@@ -14,26 +22,25 @@ var catalog = builder.AddProject<Projects.ECommerce_Catalog_API>("catalog")
     .WaitFor(postgres)
     .WithReference(serviceBus);
 
-builder.AddProject<Projects.ECommerce_Cart_API>("cart")
+var cart = builder.AddProject<Projects.ECommerce_Cart_API>("cart")
     .WithHttpEndpoint(port: 5002)
     .WithReference(postgres)
     .WithReference(redis)
-    .WithReference(serviceBus);
+    .WithReference(serviceBus)
+    .WithReference(catalog)
+    .WithReference(identity);
 
 builder.AddProject<Projects.ECommerce_Checkout_API>("checkout")
     .WithHttpEndpoint(port: 5003)
     .WithReference(postgres)
     .WithReference(serviceBus);
 
-builder.AddProject<Projects.ECommerce_Orders_API>("orders")
+var orders = builder.AddProject<Projects.ECommerce_Orders_API>("orders")
     .WithHttpEndpoint(port: 5004)
     .WithReference(postgres)
-    .WithReference(serviceBus);
-
-var identity = builder.AddProject<Projects.ECommerce_Identity_API>("identity")
-    .WithHttpEndpoint(port: 5005)
-    .WithReference(postgres)
-    .WaitFor(postgres);
+    .WithReference(serviceBus)
+    .WithReference(cart)
+    .WithReference(identity);
 
 builder.AddProject<Projects.ECommerce_Payments_API>("payments")
     .WithHttpEndpoint(port: 5006)
@@ -51,7 +58,9 @@ var gateway = builder.AddProject<Projects.ECommerce_Gateway_API>("gateway")
     .WithHttpEndpoint(port: 5000)
     .WithReference(catalog)
     .WithReference(identity)
-    .WithReference(notifications);
+    .WithReference(notifications)
+    .WithReference(cart)
+    .WithReference(orders);
 
 // Required for aspire publish → docker-compose.yml (prevents Pitfall 3)
 builder.AddDockerComposeEnvironment("ecommerce-local");
