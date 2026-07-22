@@ -94,7 +94,15 @@ Plans:
 3. User can list their order history via `GET /orders` and view a single order detail via `GET /orders/{id}` showing line items and current status.
 4. Order status transitions strictly follow the state machine Pending → Paid → Fulfilled / Cancelled / Failed, enforced by the Orders aggregate.
 5. Order queries are served from a CQRS read-model projection built from domain events (not from the write-side aggregate), verified by inspecting the projection table populated by event handlers.
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 03-01-PLAN.md — Cart backend: Redis cart store, Catalog price-snapshot client, JWT-auth'd endpoints, AppHost/gateway wiring
+- [ ] 03-02-PLAN.md — Orders domain: Order aggregate + OrderStateMachine (first MassTransit saga), OrdersDbContext, EF migration
+- [ ] 03-03-PLAN.md — Orders API: read-model projector, GET /orders, GET /orders/{id}, POST /orders/test-create-from-cart
+- [ ] 03-04-PLAN.md — Angular /cart page: cart service/model/components, wired Add to Cart entry point
+
+**Wave 1** *(parallel)*: 03-01, 03-02
+**Wave 2** *(blocked on Wave 1)*: 03-03 (depends on 03-01, 03-02), 03-04 (depends on 03-01)
 **UI hint:** yes
 
 ### Phase 4: Checkout Saga & Payments
@@ -146,7 +154,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundations | 5/5 | Complete    | 2026-06-11 |
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
-| 3. Cart & Orders Skeleton | 0/? | Not started | - |
+| 3. Cart & Orders Skeleton | 0/4 | Planned | - |
 | 4. Checkout Saga & Payments | 0/? | Not started | - |
 | 5. Fulfillment & Notifications | 0/? | Not started | - |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
@@ -166,3 +174,4 @@ Every v1 requirement maps to exactly one phase. See `REQUIREMENTS.md` ## Traceab
 *Roadmap created: 2026-05-30*
 *Phase 1 planned: 2026-06-03*
 *Phase 2 planned: 2026-06-17*
+*Phase 3 planned: 2026-07-22*
