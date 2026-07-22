@@ -2,8 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
+current_phase: 02
+current_phase_name: identity-catalog-gateway
 status: ready_to_plan
-last_updated: "2026-06-19T01:30:35.187Z"
+last_updated: "2026-07-22T10:11:55.721Z"
 progress:
   total_phases: 6
   completed_phases: 1
@@ -54,7 +56,7 @@ Plan: 1 of 12
 |---|-------|--------------|----------------|--------|
 | 1 | Foundations | 10 | no | **Planned** (5 plans, 3 waves) |
 | 2 | Identity, Catalog & Gateway | 11 | no | Not started |
-| 3 | Cart & Orders Skeleton | 9 | no | Not started |
+| 3 | Cart & Orders Skeleton | 9 | no | **Planned** (4 plans, 2 waves) |
 | 4 | Checkout Saga & Payments | 9 | **yes** | Not started |
 | 5 | Fulfillment & Notifications | 4 | no | Not started |
 | 6 | Hardening & Azure Deployment | 3 | **yes** | Not started |
