@@ -13,9 +13,9 @@
 
 ### Cart
 
-- [ ] **CART-01**: User can add, remove, and update cart item quantities
-- [ ] **CART-02**: Cart captures product price at time of item addition (prevents price drift)
-- [ ] **CART-03**: User can view cart summary with line totals and grand total
+- [x] **CART-01**: User can add, remove, and update cart item quantities
+- [x] **CART-02**: Cart captures product price at time of item addition (prevents price drift)
+- [x] **CART-03**: User can view cart summary with line totals and grand total
 - [ ] **CART-04**: Cart is cleared after checkout completes
 
 ### Identity
@@ -98,21 +98,26 @@
 ## v2 Requirements
 
 ### Payments
+
 - **PAY-V2-01**: Real Stripe payment integration with test mode
 
 ### Notifications
+
 - **NOT-V2-01**: Mark notifications as read (PATCH /notifications/{id}/read)
 - **NOT-V2-02**: Real email delivery (SMTP / SendGrid)
 
 ### Frontend
+
 - **FE-V2-01**: Order history list page (/orders)
 - **FE-V2-02**: Real-time updates via WebSockets / SignalR (replace polling)
 
 ### Operations
+
 - **OPS-V2-01**: demo.ps1 — self-driving demo script (seed data, place order, trigger failure, show compensation)
 - **OPS-V2-02**: Dead-letter queue monitoring and replay tooling
 
 ### Admin
+
 - **ADM-V2-01**: Admin dashboard for product CRUD and order management
 
 ---
@@ -159,9 +164,9 @@
 | FE-04 | Phase 2 | Complete |
 | INF-01 | Phase 2 | Complete |
 | INF-02 | Phase 2 | Complete |
-| CART-01 | Phase 3 | Pending |
-| CART-02 | Phase 3 | Pending |
-| CART-03 | Phase 3 | Pending |
+| CART-01 | Phase 3 | Complete |
+| CART-02 | Phase 3 | Complete |
+| CART-03 | Phase 3 | Complete |
 | CART-04 | Phase 3 | Pending |
 | ORD-01 | Phase 3 | Pending |
 | ORD-02 | Phase 3 | Pending |
@@ -186,6 +191,7 @@
 | IAC-03 | Phase 6 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 46 total
 - Mapped to phases: 46
 - Unmapped: 0
