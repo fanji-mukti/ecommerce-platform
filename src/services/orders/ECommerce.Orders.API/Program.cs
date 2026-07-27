@@ -39,6 +39,8 @@ try
                 r.UsePostgres();
             });
 
+        x.AddConsumer<OrderReadModelProjector>();
+
         x.AddEntityFrameworkOutbox<OrdersDbContext>(o =>
         {
             o.UsePostgres();
@@ -56,6 +58,8 @@ try
             cfg.ConfigureEndpoints(context);
         });
     });
+
+    builder.Services.AddHttpClient<ICartClient, CartClient>(c => c.BaseAddress = new Uri("http://cart"));
 
     builder.Services.AddHostedService<DbInitializer>();
 
@@ -77,7 +81,7 @@ try
     app.MapOpenApi();
     app.MapHealthChecks("/health");
 
-    // OrdersEndpoints.Map(app), OrderReadModelProjector, and ICartClient are added in Plan 03-03.
+    OrdersEndpoints.Map(app);
 
     app.Run();
 }
