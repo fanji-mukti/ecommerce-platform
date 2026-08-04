@@ -5,13 +5,13 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: cart-orders-skeleton
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-08-04T14:01:03.855Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-08-04T14:34:19.415Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 21
-  completed_plans: 20
+  completed_plans: 21
 ---
 
 # Project State: ECommerce Platform
@@ -36,7 +36,7 @@ progress:
 ## Current Position
 
 Phase: 03 (cart-orders-skeleton) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 | Field | Value |
 |-------|-------|
 | Active phase | Phase 1: Foundations |
@@ -86,6 +86,7 @@ Plan: 2 of 4
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 03 P03 | 25min | 2 tasks | 14 files |
+| Phase 03 P04 | 21min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -122,8 +123,8 @@ Plan: 2 of 4
 
 ## Session Continuity
 
-**Last session:** 2026-08-04T14:01:03.842Z
-**Stopped at:** Completed 03-03-PLAN.md
+**Last session:** 2026-08-04T14:34:19.401Z
+**Stopped at:** Completed 03-04-PLAN.md
 **Resume file:** None
 
 **Next action:** `/gsd-execute-phase 1` to run all 5 Phase 1 plans (Wave 1 → Wave 2 → Wave 3).
@@ -157,3 +158,5 @@ Plan: 2 of 4
 - [Phase ?]: OrderMapper registered as DI singleton — required for Minimal API to recognize a Mapperly-generated mapper as a service parameter rather than an inferred request body
 - [Phase ?]: OrdersWebApplicationFactory points ICartClient at a per-test WireMockServer and removes DbInitializer from the test host, mirroring CatalogWebApplicationFactory
 - [Phase ?]: GET /orders/{id} returns identical 404 for non-existent vs. other-user orders — no branch reveals which (IDOR-safe, T-03-10)
+- [Phase ?]: Cart summary panel grand total/item count never locally recomputed on quantity change — only stays pinned to last server-confirmed Cart response until debounced PATCH resolves (T-03-14 compliance)
+- [Phase ?]: Added product-detail.component.spec.ts (not in plan's files list) since no prior test coverage existed and the plan's own verify step requires it

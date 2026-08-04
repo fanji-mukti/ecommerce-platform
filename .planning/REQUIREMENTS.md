@@ -89,7 +89,7 @@
 ### Angular Frontend
 
 - [x] **FE-01**: User can browse the product catalog and view product detail (/catalog, /product/:id)
-- [ ] **FE-02**: User can manage their cart (/cart)
+- [x] **FE-02**: User can manage their cart (/cart)
 - [ ] **FE-03**: User can complete checkout and see order status updating in real-time via polling (/checkout, /orders/:id)
 - [x] **FE-04**: User can register and log in (/register, /login)
 
@@ -172,7 +172,7 @@
 | ORD-02 | Phase 3 | Complete |
 | ORD-03 | Phase 3 | Pending |
 | ORD-04 | Phase 3 | Complete |
-| FE-02 | Phase 3 | Pending |
+| FE-02 | Phase 3 | Complete |
 | CHK-01 | Phase 4 | Pending |
 | CHK-02 | Phase 4 | Pending |
 | CHK-03 | Phase 4 | Pending |
