@@ -108,12 +108,12 @@ Plans:
 4. Order status transitions strictly follow the state machine Pending → Paid → Fulfilled / Cancelled / Failed, enforced by the Orders aggregate.
 5. Order queries are served from a CQRS read-model projection built from domain events (not from the write-side aggregate), verified by inspecting the projection table populated by event handlers.
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 Plans:
 
 - [x] 03-01-PLAN.md — Cart backend: Redis cart store, Catalog price-snapshot client, JWT-auth'd endpoints, AppHost/gateway wiring
 - [x] 03-02-PLAN.md — Orders domain: Order aggregate + OrderStateMachine (first MassTransit saga), OrdersDbContext, EF migration
-- [ ] 03-03-PLAN.md — Orders API: read-model projector, GET /orders, GET /orders/{id}, POST /orders/test-create-from-cart
+- [x] 03-03-PLAN.md — Orders API: read-model projector, GET /orders, GET /orders/{id}, POST /orders/test-create-from-cart
 - [ ] 03-04-PLAN.md — Angular /cart page: cart service/model/components, wired Add to Cart entry point
 
 **Wave 1** *(parallel)*: 03-01, 03-02
@@ -178,7 +178,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundations | 5/5 | Complete    | 2026-06-11 |
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
-| 3. Cart & Orders Skeleton | 2/4 | In Progress|  |
+| 3. Cart & Orders Skeleton | 3/4 | In Progress|  |
 | 4. Checkout Saga & Payments | 0/? | Not started | - |
 | 5. Fulfillment & Notifications | 0/? | Not started | - |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |

@@ -5,13 +5,13 @@ milestone_name: milestone
 current_phase: 03
 current_phase_name: cart-orders-skeleton
 status: executing
-last_updated: "2026-07-22T10:19:55.919Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-08-04T14:01:03.855Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 21
-  completed_plans: 17
-stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
+  completed_plans: 20
 ---
 
 # Project State: ECommerce Platform
@@ -36,12 +36,12 @@ stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
 ## Current Position
 
 Phase: 03 (cart-orders-skeleton) — EXECUTING
-Plan: 1 of 4
+Plan: 2 of 4
 | Field | Value |
 |-------|-------|
 | Active phase | Phase 1: Foundations |
 | Active plan | None (not yet executing) |
-| Status | Executing Phase 03 |
+| Status | Ready to execute |
 | Phases planned | 1 / 6 |
 | Phases complete | 0 / 6 |
 
@@ -81,6 +81,11 @@ Plan: 1 of 4
 | Phase 02 P04 | 20min | 2 tasks | 13 files |
 | Phase 02 P06a | 12 | 1 tasks | 27 files |
 | Phase 02 P06b | 6 | 2 tasks | 16 files |
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 03 P03 | 25min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -117,6 +122,10 @@ Plan: 1 of 4
 
 ## Session Continuity
 
+**Last session:** 2026-08-04T14:01:03.842Z
+**Stopped at:** Completed 03-03-PLAN.md
+**Resume file:** None
+
 **Next action:** `/gsd-execute-phase 1` to run all 5 Phase 1 plans (Wave 1 → Wave 2 → Wave 3).
 
 **Files of record:**
@@ -145,3 +154,6 @@ Plan: 1 of 4
 - [Phase ?]: Used @analogjs/vitest-angular/setup-testbed (not setup-zone) for zoneless Angular TestBed initialization in component tests
 - [Phase ?]: RegisterComponent strictly posts {email, password} only to /api/identity/register — no role or isAdmin fields (mass assignment protection)
 - [Phase ?]: Category list derived via computed() from loaded products — no separate API call needed for Phase 2
+- [Phase ?]: OrderMapper registered as DI singleton — required for Minimal API to recognize a Mapperly-generated mapper as a service parameter rather than an inferred request body
+- [Phase ?]: OrdersWebApplicationFactory points ICartClient at a per-test WireMockServer and removes DbInitializer from the test host, mirroring CatalogWebApplicationFactory
+- [Phase ?]: GET /orders/{id} returns identical 404 for non-existent vs. other-user orders — no branch reveals which (IDOR-safe, T-03-10)

@@ -16,7 +16,7 @@
 - [x] **CART-01**: User can add, remove, and update cart item quantities
 - [x] **CART-02**: Cart captures product price at time of item addition (prevents price drift)
 - [x] **CART-03**: User can view cart summary with line totals and grand total
-- [ ] **CART-04**: Cart is cleared after checkout completes
+- [x] **CART-04**: Cart is cleared after checkout completes
 
 ### Identity
 
@@ -27,10 +27,10 @@
 
 ### Orders
 
-- [ ] **ORD-01**: User can list their order history
-- [ ] **ORD-02**: User can view order detail with line items and current status
+- [x] **ORD-01**: User can list their order history
+- [x] **ORD-02**: User can view order detail with line items and current status
 - [ ] **ORD-03**: Order status follows state machine: Pending → Paid → Fulfilled / Cancelled / Failed
-- [ ] **ORD-04**: Order queries are served via a CQRS read model (projection from domain events)
+- [x] **ORD-04**: Order queries are served via a CQRS read model (projection from domain events)
 
 ### Checkout & Saga
 
@@ -167,11 +167,11 @@
 | CART-01 | Phase 3 | Complete |
 | CART-02 | Phase 3 | Complete |
 | CART-03 | Phase 3 | Complete |
-| CART-04 | Phase 3 | Pending |
-| ORD-01 | Phase 3 | Pending |
-| ORD-02 | Phase 3 | Pending |
+| CART-04 | Phase 3 | Complete |
+| ORD-01 | Phase 3 | Complete |
+| ORD-02 | Phase 3 | Complete |
 | ORD-03 | Phase 3 | Pending |
-| ORD-04 | Phase 3 | Pending |
+| ORD-04 | Phase 3 | Complete |
 | FE-02 | Phase 3 | Pending |
 | CHK-01 | Phase 4 | Pending |
 | CHK-02 | Phase 4 | Pending |
