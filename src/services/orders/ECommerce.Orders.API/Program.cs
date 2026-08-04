@@ -52,14 +52,35 @@ try
             cfg.UseEntityFrameworkOutbox<OrdersDbContext>(context);
         });
 
-        x.UsingAzureServiceBus((context, cfg) =>
+        var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
+        if (messagingConnectionString == "placeholder")
         {
-            cfg.Host(builder.Configuration.GetConnectionString("messaging"));
-            cfg.ConfigureEndpoints(context);
-        });
+            // Test sentinel (see OrdersWebApplicationFactory / CatalogWebApplicationFactory's
+            // established "placeholder" convention) — no live Azure Service Bus is available in
+            // integration tests. Use MassTransit's in-memory transport so the bus outbox drainer
+            // can still deliver OrderCreated/OrderStatusChanged to OrderReadModelProjector and the
+            // saga within the same test process (ORD-04 eventual-consistency proof).
+            x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
+        }
+        else
+        {
+            x.UsingAzureServiceBus((context, cfg) =>
+            {
+                cfg.Host(messagingConnectionString);
+                cfg.ConfigureEndpoints(context);
+            });
+        }
     });
 
     builder.Services.AddHttpClient<ICartClient, CartClient>(c => c.BaseAddress = new Uri("http://cart"));
+
+    // Register the Mapperly-generated mapper as a DI service — without this, ASP.NET Core's
+    // Minimal API parameter-source inference cannot recognize `OrderMapper mapper` as a service
+    // parameter and instead infers it as a request body, which crashes route registration for
+    // GET /orders and GET /orders/{id} at host startup ("Body was inferred but the method does
+    // not allow inferred body parameters"). OrderMapper is a stateless generated partial class,
+    // so a singleton lifetime is safe.
+    builder.Services.AddSingleton<OrderMapper>();
 
     builder.Services.AddHostedService<DbInitializer>();
 
