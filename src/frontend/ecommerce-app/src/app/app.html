@@ -3,6 +3,7 @@
   <span class="toolbar-spacer"></span>
   <a mat-button routerLink="/catalog" routerLinkActive="active-link">Catalog</a>
   @if (isAuthenticated().isAuthenticated) {
+    <a mat-button routerLink="/cart" routerLinkActive="active-link">Cart</a>
     <span class="username">{{ userData().userData?.name || userData().userData?.email }}</span>
     <button mat-button (click)="signOut()">Sign Out</button>
   } @else {

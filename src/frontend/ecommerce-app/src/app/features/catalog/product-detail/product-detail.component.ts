@@ -1,12 +1,14 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Product } from '../../../shared/models/product.model';
 import { CatalogService } from '../../../core/services/catalog.service';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -23,11 +25,15 @@ import { CatalogService } from '../../../core/services/catalog.service';
 })
 export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private catalogService = inject(CatalogService);
+  private cartService = inject(CartService);
 
   product = signal<Product | null>(null);
   isLoading = signal<boolean>(false);
   notFound = signal<boolean>(false);
+  isAdding = signal<boolean>(false);
+  addError = signal<boolean>(false);
 
   stockLabel = computed(() => {
     const p = this.product();
@@ -58,6 +64,25 @@ export class ProductDetailComponent implements OnInit {
       error: (err) => {
         this.isLoading.set(false);
         this.notFound.set(true);
+      },
+    });
+  }
+
+  onAddToCart(): void {
+    const p = this.product();
+    if (!p) return;
+
+    this.isAdding.set(true);
+    this.addError.set(false);
+
+    this.cartService.addItem(p.id, 1).subscribe({
+      next: () => {
+        this.isAdding.set(false);
+        this.router.navigate(['/cart']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isAdding.set(false);
+        this.addError.set(true);
       },
     });
   }

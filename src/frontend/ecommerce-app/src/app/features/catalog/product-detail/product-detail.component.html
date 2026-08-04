@@ -56,9 +56,13 @@
           </div>
         }
 
-        <button mat-raised-button color="primary" disabled>
-          Add to Cart — Coming Soon
+        <button mat-raised-button color="primary" [disabled]="isAdding()" (click)="onAddToCart()">
+          Add to Cart
         </button>
+
+        @if (addError()) {
+          <p class="add-to-cart-error">Something went wrong while adding this item to your cart. Please try again.</p>
+        }
       </div>
     </div>
   }
