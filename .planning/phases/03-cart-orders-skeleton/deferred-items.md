@@ -51,3 +51,17 @@ consistently, one full run **did** execute and reproduced the exact "No endpoint
 configuration bug (9/10 tests failing), which was root-caused directly against
 `Aspire.StackExchange.Redis` 13.4.4's published source and fixed (see `03-01-SUMMARY.md`). All `dotnet build`
 runs for `Cart.sln` and `ecommerce.AppHost.sln` succeed with 0 errors after every change in this plan.
+
+**Recurrence during phase-level post-merge verification (Wave 2, orchestrator session):** after merging
+Plan 03-03's changes, `ECommerce.Orders.API.dll` began hitting the identical
+`FileLoadException: ... An Application Control policy has blocked this file. (0x800711C7)` on every
+`dotnet exec ECommerce.Orders.Tests.dll` attempt (5 retries: immediate, +15s, clean rebuild, +90s wait) —
+all 10 tests failed with the same file-load error, not a test assertion failure. Confirmed non-systemic:
+`ECommerce.Cart.Tests.dll`'s freshly-built binaries loaded without issue in the same window, ruling out a
+blanket SAC lockdown. This is the same known, pre-existing, environment/VM-level policy issue as above —
+not a regression introduced by Plan 03-03 or 03-04. Supporting evidence the Orders test suite is actually
+green: the Plan 03-03 executor itself ran `ECommerce.Orders.Tests.exe` successfully twice in its own
+session (10/10 passing) immediately after writing the tests, before this block recurred. `dotnet build`
+for `Orders.sln` and `ecommerce.AppHost.sln` succeeded with 0 errors both before and after this block.
+**Action needed from a human with admin rights on this VM:** either disable Smart App Control, or add an
+Application Control exclusion for `dotnet build` output under `src/**/bin/**`.
