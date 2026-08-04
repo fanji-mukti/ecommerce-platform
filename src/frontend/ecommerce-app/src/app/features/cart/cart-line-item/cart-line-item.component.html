@@ -1,0 +1,43 @@
+<mat-card class="cart-line-item" style="margin-bottom: 16px;">
+  <mat-card-content style="display: flex; align-items: center; gap: 16px; padding: 16px;">
+    <p
+      class="product-name"
+      style="flex: 1 1 auto; margin: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"
+    >
+      {{ item().productName }}
+    </p>
+
+    <div class="quantity-stepper" style="display: flex; align-items: center; gap: 8px;">
+      <button
+        mat-icon-button
+        style="min-width: 44px; min-height: 44px;"
+        [attr.aria-label]="'Decrease quantity of ' + item().productName"
+        (click)="onDecrement()"
+      >
+        <mat-icon>remove</mat-icon>
+      </button>
+      <span class="quantity-value">{{ item().quantity }}</span>
+      <button
+        mat-icon-button
+        style="min-width: 44px; min-height: 44px;"
+        [attr.aria-label]="'Increase quantity of ' + item().productName"
+        (click)="onIncrement()"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    <p class="line-total" style="min-width: 96px; text-align: right; margin: 0;">
+      {{ item().lineTotal | currency: 'USD' }}
+    </p>
+
+    <button
+      mat-icon-button
+      color="warn"
+      [attr.aria-label]="'Remove ' + item().productName + ' from cart'"
+      (click)="onRemove()"
+    >
+      <mat-icon>delete</mat-icon>
+    </button>
+  </mat-card-content>
+</mat-card>
