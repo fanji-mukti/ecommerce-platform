@@ -1,0 +1,53 @@
+<div class="cart-page">
+  <h1>Your Cart</h1>
+
+  @if (isLoading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  @if (hasError()) {
+    <div class="error-state">
+      <h2>Failed to load cart</h2>
+      <p>Something went wrong while loading your cart. Please refresh the page or try again.</p>
+      <button mat-raised-button color="primary" (click)="retry()">Retry</button>
+    </div>
+  }
+
+  @if (!hasError() && !isLoading() && cart(); as c) {
+    @if (c.items.length === 0) {
+      <div class="empty-state">
+        <h2>Your cart is empty</h2>
+        <p>Add items from the catalog to get started.</p>
+        <a mat-button routerLink="/catalog">Browse Catalog</a>
+      </div>
+    } @else {
+      <div class="cart-layout">
+        <div class="line-items">
+          @for (item of c.items; track item.productId) {
+            <app-cart-line-item
+              [item]="item"
+              (quantityChange)="onQuantityChange(item.productId, $event)"
+              (remove)="onRemove(item.productId)"
+            ></app-cart-line-item>
+          }
+        </div>
+
+        <div class="order-summary">
+          <mat-card>
+            <mat-card-content>
+              <h2>Order Summary</h2>
+              <p class="summary-count">{{ itemCountLabel() }}</p>
+              <p class="summary-total">
+                <span>Total</span>
+                <span>{{ c.grandTotal | currency: 'USD' }}</span>
+              </p>
+              <button mat-raised-button color="primary" disabled>
+                Proceed to Checkout — Coming Soon
+              </button>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    }
+  }
+</div>

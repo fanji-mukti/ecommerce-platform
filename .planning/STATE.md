@@ -2,17 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 02
-current_phase_name: identity-catalog-gateway
-status: ready_to_plan
-last_updated: "2026-07-22T10:11:55.721Z"
+current_phase: 03
+current_phase_name: cart-orders-skeleton
+status: executing
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-08-04T14:34:19.415Z"
 progress:
-  total_phases: 6
-  completed_phases: 1
-  total_plans: 17
-  completed_plans: 12
-  percent: 17
-stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
+  total_phases: 3
+  completed_phases: 3
+  total_plans: 21
+  completed_plans: 21
 ---
 
 # Project State: ECommerce Platform
@@ -25,7 +24,7 @@ stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
 
 **Core Value:** A working checkout saga that spans Catalog, Cart, Orders, Payments, Fulfillment, and Notifications — demonstrating event-driven coordination between microservices without direct coupling.
 
-**Current Focus:** Phase 02 — identity-catalog-gateway
+**Current Focus:** Phase 03 — cart-orders-skeleton
 
 **Mode:** mvp (vertical slices)
 **Granularity:** coarse
@@ -36,8 +35,8 @@ stopped_at: Phase 01 complete (5/5) — ready to discuss Phase 2
 
 ## Current Position
 
-Phase: 02 (identity-catalog-gateway) — EXECUTING
-Plan: 1 of 12
+Phase: 03 (cart-orders-skeleton) — EXECUTING
+Plan: 3 of 4
 | Field | Value |
 |-------|-------|
 | Active phase | Phase 1: Foundations |
@@ -82,6 +81,12 @@ Plan: 1 of 12
 | Phase 02 P04 | 20min | 2 tasks | 13 files |
 | Phase 02 P06a | 12 | 1 tasks | 27 files |
 | Phase 02 P06b | 6 | 2 tasks | 16 files |
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 03 P03 | 25min | 2 tasks | 14 files |
+| Phase 03 P04 | 21min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -118,6 +123,10 @@ Plan: 1 of 12
 
 ## Session Continuity
 
+**Last session:** 2026-08-04T14:34:19.401Z
+**Stopped at:** Completed 03-04-PLAN.md
+**Resume file:** None
+
 **Next action:** `/gsd-execute-phase 1` to run all 5 Phase 1 plans (Wave 1 → Wave 2 → Wave 3).
 
 **Files of record:**
@@ -146,3 +155,8 @@ Plan: 1 of 12
 - [Phase ?]: Used @analogjs/vitest-angular/setup-testbed (not setup-zone) for zoneless Angular TestBed initialization in component tests
 - [Phase ?]: RegisterComponent strictly posts {email, password} only to /api/identity/register — no role or isAdmin fields (mass assignment protection)
 - [Phase ?]: Category list derived via computed() from loaded products — no separate API call needed for Phase 2
+- [Phase ?]: OrderMapper registered as DI singleton — required for Minimal API to recognize a Mapperly-generated mapper as a service parameter rather than an inferred request body
+- [Phase ?]: OrdersWebApplicationFactory points ICartClient at a per-test WireMockServer and removes DbInitializer from the test host, mirroring CatalogWebApplicationFactory
+- [Phase ?]: GET /orders/{id} returns identical 404 for non-existent vs. other-user orders — no branch reveals which (IDOR-safe, T-03-10)
+- [Phase ?]: Cart summary panel grand total/item count never locally recomputed on quantity change — only stays pinned to last server-confirmed Cart response until debounced PATCH resolves (T-03-14 compliance)
+- [Phase ?]: Added product-detail.component.spec.ts (not in plan's files list) since no prior test coverage existed and the plan's own verify step requires it

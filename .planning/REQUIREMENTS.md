@@ -13,10 +13,10 @@
 
 ### Cart
 
-- [ ] **CART-01**: User can add, remove, and update cart item quantities
-- [ ] **CART-02**: Cart captures product price at time of item addition (prevents price drift)
-- [ ] **CART-03**: User can view cart summary with line totals and grand total
-- [ ] **CART-04**: Cart is cleared after checkout completes
+- [x] **CART-01**: User can add, remove, and update cart item quantities
+- [x] **CART-02**: Cart captures product price at time of item addition (prevents price drift)
+- [x] **CART-03**: User can view cart summary with line totals and grand total
+- [x] **CART-04**: Cart is cleared after checkout completes
 
 ### Identity
 
@@ -27,10 +27,10 @@
 
 ### Orders
 
-- [ ] **ORD-01**: User can list their order history
-- [ ] **ORD-02**: User can view order detail with line items and current status
+- [x] **ORD-01**: User can list their order history
+- [x] **ORD-02**: User can view order detail with line items and current status
 - [ ] **ORD-03**: Order status follows state machine: Pending → Paid → Fulfilled / Cancelled / Failed
-- [ ] **ORD-04**: Order queries are served via a CQRS read model (projection from domain events)
+- [x] **ORD-04**: Order queries are served via a CQRS read model (projection from domain events)
 
 ### Checkout & Saga
 
@@ -89,7 +89,7 @@
 ### Angular Frontend
 
 - [x] **FE-01**: User can browse the product catalog and view product detail (/catalog, /product/:id)
-- [ ] **FE-02**: User can manage their cart (/cart)
+- [x] **FE-02**: User can manage their cart (/cart)
 - [ ] **FE-03**: User can complete checkout and see order status updating in real-time via polling (/checkout, /orders/:id)
 - [x] **FE-04**: User can register and log in (/register, /login)
 
@@ -98,21 +98,26 @@
 ## v2 Requirements
 
 ### Payments
+
 - **PAY-V2-01**: Real Stripe payment integration with test mode
 
 ### Notifications
+
 - **NOT-V2-01**: Mark notifications as read (PATCH /notifications/{id}/read)
 - **NOT-V2-02**: Real email delivery (SMTP / SendGrid)
 
 ### Frontend
+
 - **FE-V2-01**: Order history list page (/orders)
 - **FE-V2-02**: Real-time updates via WebSockets / SignalR (replace polling)
 
 ### Operations
+
 - **OPS-V2-01**: demo.ps1 — self-driving demo script (seed data, place order, trigger failure, show compensation)
 - **OPS-V2-02**: Dead-letter queue monitoring and replay tooling
 
 ### Admin
+
 - **ADM-V2-01**: Admin dashboard for product CRUD and order management
 
 ---
@@ -159,15 +164,15 @@
 | FE-04 | Phase 2 | Complete |
 | INF-01 | Phase 2 | Complete |
 | INF-02 | Phase 2 | Complete |
-| CART-01 | Phase 3 | Pending |
-| CART-02 | Phase 3 | Pending |
-| CART-03 | Phase 3 | Pending |
-| CART-04 | Phase 3 | Pending |
-| ORD-01 | Phase 3 | Pending |
-| ORD-02 | Phase 3 | Pending |
+| CART-01 | Phase 3 | Complete |
+| CART-02 | Phase 3 | Complete |
+| CART-03 | Phase 3 | Complete |
+| CART-04 | Phase 3 | Complete |
+| ORD-01 | Phase 3 | Complete |
+| ORD-02 | Phase 3 | Complete |
 | ORD-03 | Phase 3 | Pending |
-| ORD-04 | Phase 3 | Pending |
-| FE-02 | Phase 3 | Pending |
+| ORD-04 | Phase 3 | Complete |
+| FE-02 | Phase 3 | Complete |
 | CHK-01 | Phase 4 | Pending |
 | CHK-02 | Phase 4 | Pending |
 | CHK-03 | Phase 4 | Pending |
@@ -186,6 +191,7 @@
 | IAC-03 | Phase 6 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 46 total
 - Mapped to phases: 46
 - Unmapped: 0
