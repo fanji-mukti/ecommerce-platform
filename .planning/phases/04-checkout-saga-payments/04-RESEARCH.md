@@ -482,24 +482,26 @@ public record PaymentFailed(
 
 **If this table is empty:** N/A — see rows above. All ASB-scheduling-specific claims are flagged; state-machine architecture claims (Sections "Saga State Reconciliation" through "Don't Hand-Roll") are grounded directly in this repo's own code, not external sources, and are not included in this table.
 
-## Open Questions
+## Open Questions (per-question status below — not all resolved)
 
-1. **Does the ASB emulator actually deliver scheduled messages?**
+1. **Does the ASB emulator actually deliver scheduled messages?** — GATED, not yet resolved.
    - What we know: Native ASB scheduling API exists and is documented for cloud; emulator limitations docs don't explicitly confirm or deny scheduled-message support.
    - What's unclear: Whether a local `docker compose`/Aspire demo run will actually see the CHK-05 timeout fire without a live Azure namespace.
    - Recommendation: Wave 0 spike (manual `Schedule()` call with a 10s delay against the running emulator) before committing task plans to the ASB-native approach; fall back to Quartz.NET-for-both-environments if it fails.
-   - **Status: Addressed (pending execution outcome).** A revision to 04-02-PLAN.md added Task 2 — a standalone, fully automated spike (`spikes/04-asb-scheduling-spike/`) that drives the real `mcr.microsoft.com/azure-messaging/servicebus-emulator` image directly via `Azure.Messaging.ServiceBus`'s native `ScheduledEnqueueTime`, decoupled from the saga/HTTP/auth stack, and gates whether Task 3's ASB-native `Schedule`/`Unschedule` implementation is accepted or needs escalation to the Quartz.NET-for-both-environments fallback.
-   - **Resolution:** To be recorded here by 04-02-PLAN.md Task 2 upon execution, as the observed `SPIKE-RESULT: PASS`/`SPIKE-RESULT: FAIL` line plus the date it ran. This placeholder must be replaced with the actual outcome before Phase 4 is considered verified — do not leave this as "pending" past plan execution.
+   - **Status: Gated by 04-02-PLAN.md Task 2's automated spike.** Task 2 (`spikes/04-asb-scheduling-spike/`) drives the real `mcr.microsoft.com/azure-messaging/servicebus-emulator` image directly via `Azure.Messaging.ServiceBus`'s native `ScheduledEnqueueTime`, decoupled from the saga/HTTP/auth stack. Its `<verify><automated>` step fails the build (non-zero exit) unless the spike prints `SPIKE-RESULT: PASS` — a FAIL outcome halts the autonomous plan before Task 3's ASB-native `Schedule`/`Unschedule` implementation is treated as validated, per the fallback to Quartz.NET-for-both-environments.
+   - **Resolution:** Not yet recorded — to be filled in by 04-02-PLAN.md Task 2 upon execution, as the observed `SPIKE-RESULT: PASS`/`SPIKE-RESULT: FAIL` line plus the date it ran. This placeholder must be replaced with the actual outcome before Phase 4 is considered verified — do not leave this as "pending" past plan execution.
 
-2. **Should `Refunding` be a real visible saga state, or should CHK-04 go `Paid → Cancelled` directly with a fire-and-forget refund?**
+2. **Should `Refunding` be a real visible saga state, or should CHK-04 go `Paid → Cancelled` directly with a fire-and-forget refund?** — **RESOLVED.**
    - What we know: D-06 explicitly allows "the failure/cancellation equivalent" beyond the literal three states, and D-09 wants a specific human-readable reason ("Fulfillment failed — order cancelled and refunded") that reads naturally as a single terminal message.
    - What's unclear: Whether the demo value of an extra visible stepper step outweighs the added state-machine complexity.
    - Recommendation: Default to the simpler `Paid → Cancelled` direct transition (publish `RefundPayment` as a `.Then()` side effect, don't wait for `PaymentRefunded` to transition) unless the UI-phase pass wants the extra visible step — flag for `/gsd-plan-phase` to decide explicitly rather than leaving it implicit.
+   - **Resolution:** Adopted as written. 04-02-PLAN.md Task 3 implements the direct `Paid → Cancelled` transition on `FulfillmentFailed` (publishing `RefundPayment` as a side effect, no intermediate `Refunding` state) — see Task 3's `<behavior>` block, "Open Question 2 resolved."
 
-3. **Exact route/host for `POST /orders/checkout`** (the real successor to `POST /orders/test-create-from-cart`) vs. keeping Checkout.API's internal call thin.
+3. **Exact route/host for `POST /orders/checkout`** (the real successor to `POST /orders/test-create-from-cart`) vs. keeping Checkout.API's internal call thin. — **RESOLVED (design decision; implementation pending in plan 04-05).**
    - What we know: Orders.API already owns `ICartClient` and the cart-fetch-and-`OrderCreated`-publish logic.
    - What's unclear: Whether this becomes a new public-but-internal-only Orders endpoint, or logic is moved/duplicated into Checkout.API with its own `ICartClient`.
    - Recommendation: Reuse Orders.API's existing `ICartClient`/cart-fetch logic (single new internal endpoint on Orders.API) rather than duplicating it in Checkout.API — less code, one owner of "how an order gets created from a cart."
+   - **Resolution:** Adopted as the design decision for this phase's HTTP-layer plan. 04-02-PLAN.md is saga-logic-only (no HTTP endpoints — see Objective) and does not implement this; the recommendation carries forward as the locked approach for the HTTP-endpoint plan (04-05), which reuses Orders.API's existing `ICartClient` rather than duplicating cart-fetch logic in Checkout.API.
 
 ## Environment Availability
 
