@@ -135,8 +135,28 @@ Plans:
 4. Fulfillment-failure compensation (simulated by a test trigger or seeded condition) causes the saga to publish `RefundPayment` and `CancelOrder`, leaving the system in a consistent terminal state.
 5. A checkout left incomplete for ~15 minutes triggers a saga timeout that cascades the same compensation path as an explicit failure, leaving no orphaned orders or payments.
 
-**Plans:** TBD
+**Plans:** 6 plans, 5 waves
+Plans:
+
+- [ ] 04-01-PLAN.md — Message contracts (StartCheckout, AuthorisePayment/RefundPayment, PaymentAuthorised/PaymentFailed/PaymentRefunded, FulfillmentFailed) + AppHost/Gateway wiring for Checkout/Payments
+- [ ] 04-02-PLAN.md — Orders saga: Schedule/Unschedule timeout (CHK-05), typed payment/fulfillment events (CHK-03/CHK-04), ADR-0009, extended unit tests
+- [ ] 04-03-PLAN.md — Orders HTTP: POST /orders/checkout (replaces test-create-from-cart), GET /orders/{id} + FailureReason
+- [ ] 04-04-PLAN.md — Payments service: PaymentsDbContext, AuthorisePaymentConsumer/RefundPaymentConsumer, idempotency (PAY-01/02/03)
+- [ ] 04-05-PLAN.md — Checkout.API façade: POST /checkout, GET /checkout/{id}, demo fulfillment-failure trigger (CHK-01/02/04)
+- [ ] 04-06-PLAN.md — Angular /checkout + /orders/:id pages: stepper, polling, hint text, demo toggle (FE-03)
+
+**Wave 1** *(parallel)*: 04-01
+**Wave 2** *(blocked on Wave 1)*: 04-02, 04-04 (parallel — no file overlap)
+**Wave 3** *(blocked on Wave 2)*: 04-03 (depends on 04-02)
+**Wave 4** *(blocked on Wave 3)*: 04-05 (depends on 04-01, 04-03)
+**Wave 5** *(blocked on Wave 4)*: 04-06 (depends on 04-05)
 **UI hint:** yes
+
+**Cross-cutting constraints:**
+
+- No new persisted saga state added for "Started" — Checkout.API synthesizes it from a 404, per ADR-0009 (see 04-02/04-05)
+- `MassTransit.Quartz` pinned exactly to `8.3.6`, gated by a blocking human-verify checkpoint before install (plan 04-02)
+- `checkoutId == orderId` — a single correlation id end-to-end, minted by Checkout.API
 
 ### Phase 5: Fulfillment & Notifications
 
@@ -179,7 +199,7 @@ Plans:
 | 1. Foundations | 5/5 | Complete    | 2026-06-11 |
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
-| 4. Checkout Saga & Payments | 0/? | Not started | - |
+| 4. Checkout Saga & Payments | 0/6 | Planned | - |
 | 5. Fulfillment & Notifications | 0/? | Not started | - |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
@@ -199,3 +219,4 @@ Every v1 requirement maps to exactly one phase. See `REQUIREMENTS.md` ## Traceab
 *Phase 1 planned: 2026-06-03*
 *Phase 2 planned: 2026-06-17*
 *Phase 3 planned: 2026-07-22*
+*Phase 4 planned: 2026-08-08*
