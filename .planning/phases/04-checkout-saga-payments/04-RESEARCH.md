@@ -2,7 +2,7 @@
 
 **Researched:** 2026-08-08
 **Domain:** MassTransit saga orchestration, Azure Service Bus scheduled delivery, simulated payment idempotency, Angular polling UX
-**Confidence:** MEDIUM (state machine architecture and contracts: HIGH — grounded in existing code; ASB scheduling mechanics: MEDIUM-LOW — flagged as highest technical risk in STATE.md, needs a Wave 0 spike)
+**Confidence:** MEDIUM (state machine architecture and contracts: HIGH — grounded in existing code; ASB scheduling mechanics: MEDIUM-LOW — flagged as highest technical risk in STATE.md; a Wave 0 spike is now planned as 04-02-PLAN.md Task 2, gating Task 3's ASB-native implementation — see Open Question 1)
 
 ## Summary
 
@@ -488,6 +488,8 @@ public record PaymentFailed(
    - What we know: Native ASB scheduling API exists and is documented for cloud; emulator limitations docs don't explicitly confirm or deny scheduled-message support.
    - What's unclear: Whether a local `docker compose`/Aspire demo run will actually see the CHK-05 timeout fire without a live Azure namespace.
    - Recommendation: Wave 0 spike (manual `Schedule()` call with a 10s delay against the running emulator) before committing task plans to the ASB-native approach; fall back to Quartz.NET-for-both-environments if it fails.
+   - **Status: Addressed (pending execution outcome).** A revision to 04-02-PLAN.md added Task 2 — a standalone, fully automated spike (`spikes/04-asb-scheduling-spike/`) that drives the real `mcr.microsoft.com/azure-messaging/servicebus-emulator` image directly via `Azure.Messaging.ServiceBus`'s native `ScheduledEnqueueTime`, decoupled from the saga/HTTP/auth stack, and gates whether Task 3's ASB-native `Schedule`/`Unschedule` implementation is accepted or needs escalation to the Quartz.NET-for-both-environments fallback.
+   - **Resolution:** To be recorded here by 04-02-PLAN.md Task 2 upon execution, as the observed `SPIKE-RESULT: PASS`/`SPIKE-RESULT: FAIL` line plus the date it ran. This placeholder must be replaced with the actual outcome before Phase 4 is considered verified — do not leave this as "pending" past plan execution.
 
 2. **Should `Refunding` be a real visible saga state, or should CHK-04 go `Paid → Cancelled` directly with a fire-and-forget refund?**
    - What we know: D-06 explicitly allows "the failure/cancellation equivalent" beyond the literal three states, and D-09 wants a specific human-readable reason ("Fulfillment failed — order cancelled and refunded") that reads naturally as a single terminal message.
@@ -504,7 +506,7 @@ public record PaymentFailed(
 | Dependency | Required By | Available | Version | Fallback |
 |------------|--------------|-----------|---------|----------|
 | .NET SDK 10 | All new/modified services | Not directly probed this session (no bash `dotnet --version` run — informational only, prior phases already built and ran successfully on this stack) | 10.x expected | — |
-| Azure Service Bus emulator (Docker) | CHK-05 timeout scheduling, all pub/sub in this phase | Assumed available via existing Aspire `RunAsEmulator()` wiring (ADR-0002) — not independently re-verified this session | — | Quartz.NET-for-both-environments (see Alternatives Considered) if the Wave 0 spike (Open Question 1) fails |
+| Azure Service Bus emulator (Docker) | CHK-05 timeout scheduling, all pub/sub in this phase | Same emulator image confirmed reachable/runnable via 04-02-PLAN.md Task 2's standalone spike (`spikes/04-asb-scheduling-spike/`) — scheduled-delivery fidelity outcome recorded at Open Question 1 once that task executes | — | Quartz.NET-for-both-environments (see Alternatives Considered) if the Task 2 spike (Open Question 1) fails |
 | PostgreSQL (Docker, via Aspire) | New PaymentsDb | Assumed available — same shared Aspire `postgres` resource Orders/Notifications already use | — | — |
 
 **Missing dependencies with no fallback:** none identified — this phase only adds to already-provisioned infrastructure (Postgres, ASB emulator), it does not introduce a new infrastructure dependency class.
@@ -551,7 +553,7 @@ public record PaymentFailed(
 **Confidence breakdown:**
 - Standard stack (MassTransit pins, Payments DB addition): HIGH — grounded in existing repo conventions and directly-fetched nuget.org data
 - Architecture (saga state reconciliation, contracts, Checkout.API façade): HIGH — synthesized directly from this repo's existing, tested code plus locked ADRs; no external dependency
-- Scheduling mechanics (CHK-05 timeout): MEDIUM-LOW — this is the flagged highest-risk area; recommendation is defensible and cross-referenced across 3+ sources, but the ASB-emulator-specific behavior is unconfirmed and needs a Wave 0 spike before planning locks in the ASB-native approach
+- Scheduling mechanics (CHK-05 timeout): MEDIUM-LOW — this is the flagged highest-risk area; recommendation is defensible and cross-referenced across 3+ sources; the ASB-emulator-specific behavior is now gated by an automated spike (04-02-PLAN.md Task 2) that must pass before Task 3's ASB-native implementation is trusted (see Open Question 1 for the recorded outcome)
 - Pitfalls: MEDIUM-HIGH — most are grounded in direct repo inspection (missing AppHost references, missing Angular folder); the two ASB-specific pitfalls are MEDIUM (documented upstream issues, not independently reproduced)
 
 **Research date:** 2026-08-08
