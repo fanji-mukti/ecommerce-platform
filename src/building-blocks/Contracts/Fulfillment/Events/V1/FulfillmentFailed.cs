@@ -2,9 +2,12 @@ using ECommerce.Contracts;
 
 namespace ECommerce.Fulfillment.Events.V1;
 
-public record FulfillmentServiceReady(
+public record FulfillmentFailed(
     Guid MessageId,
     Guid CorrelationId,
     Guid CausationId,
-    DateTimeOffset OccurredAt
+    DateTimeOffset OccurredAt,
+    Guid CheckoutId,
+    string Reason,
+    DateTimeOffset FailedAt
 ) : IMessageEnvelope;
