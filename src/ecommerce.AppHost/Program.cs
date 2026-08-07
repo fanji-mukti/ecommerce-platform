@@ -30,11 +30,6 @@ var cart = builder.AddProject<Projects.ECommerce_Cart_API>("cart")
     .WithReference(catalog)
     .WithReference(identity);
 
-builder.AddProject<Projects.ECommerce_Checkout_API>("checkout")
-    .WithHttpEndpoint(port: 5003)
-    .WithReference(postgres)
-    .WithReference(serviceBus);
-
 var orders = builder.AddProject<Projects.ECommerce_Orders_API>("orders")
     .WithHttpEndpoint(port: 5004)
     .WithReference(postgres)
@@ -42,8 +37,15 @@ var orders = builder.AddProject<Projects.ECommerce_Orders_API>("orders")
     .WithReference(cart)
     .WithReference(identity);
 
+var checkout = builder.AddProject<Projects.ECommerce_Checkout_API>("checkout")
+    .WithHttpEndpoint(port: 5003)
+    .WithReference(serviceBus)
+    .WithReference(orders);
+
 builder.AddProject<Projects.ECommerce_Payments_API>("payments")
     .WithHttpEndpoint(port: 5006)
+    .WithReference(postgres)
+    .WaitFor(postgres)
     .WithReference(serviceBus);
 
 builder.AddProject<Projects.ECommerce_Fulfillment_API>("fulfillment")
@@ -60,7 +62,8 @@ var gateway = builder.AddProject<Projects.ECommerce_Gateway_API>("gateway")
     .WithReference(identity)
     .WithReference(notifications)
     .WithReference(cart)
-    .WithReference(orders);
+    .WithReference(orders)
+    .WithReference(checkout);
 
 // Required for aspire publish → docker-compose.yml (prevents Pitfall 3)
 builder.AddDockerComposeEnvironment("ecommerce-local");
