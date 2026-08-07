@@ -11,7 +11,8 @@ public record OrderCreated(
     string UserId,
     IReadOnlyList<OrderLineItemData> LineItems,
     decimal TotalAmount,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    bool SimulatePaymentFailure = false
 ) : IMessageEnvelope;
 
 public record OrderLineItemData(

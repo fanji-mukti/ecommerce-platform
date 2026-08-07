@@ -10,5 +10,6 @@ public record OrderStatusChanged(
     Guid OrderId,
     string PreviousStatus,
     string NewStatus,
-    DateTimeOffset ChangedAt
+    DateTimeOffset ChangedAt,
+    string? FailureReason = null
 ) : IMessageEnvelope;
