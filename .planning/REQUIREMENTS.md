@@ -42,9 +42,9 @@
 
 ### Payments
 
-- [ ] **PAY-01**: Simulated payment service processes AuthorisePayment commands
-- [ ] **PAY-02**: Amounts ending in `.99` deterministically trigger PaymentFailed (demo trigger)
-- [ ] **PAY-03**: Payment processing is idempotent by checkoutId
+- [x] **PAY-01**: Simulated payment service processes AuthorisePayment commands
+- [x] **PAY-02**: Amounts ending in `.99` deterministically trigger PaymentFailed (demo trigger)
+- [x] **PAY-03**: Payment processing is idempotent by checkoutId
 
 ### Fulfillment
 
@@ -178,9 +178,9 @@
 | CHK-03 | Phase 4 | Pending |
 | CHK-04 | Phase 4 | Pending |
 | CHK-05 | Phase 4 | Pending |
-| PAY-01 | Phase 4 | Pending |
-| PAY-02 | Phase 4 | Pending |
-| PAY-03 | Phase 4 | Pending |
+| PAY-01 | Phase 4 | Complete |
+| PAY-02 | Phase 4 | Complete |
+| PAY-03 | Phase 4 | Complete |
 | FE-03 | Phase 4 | Pending |
 | FUL-01 | Phase 5 | Pending |
 | FUL-02 | Phase 5 | Pending |
