@@ -16,4 +16,6 @@ public class Order : SagaStateMachineInstance
     public decimal TotalAmount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public string? FailureReason { get; set; }
+    public Guid? CheckoutTimeoutTokenId { get; set; }
 }
