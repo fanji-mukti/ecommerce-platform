@@ -30,7 +30,6 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
     public Event<PaymentAuthorised> PaymentAuthorisedEvent { get; private set; } = null!;
     public Event<PaymentFailed> PaymentFailedEvent { get; private set; } = null!;
     public Event<FulfillmentFailed> FulfillmentFailedEvent { get; private set; } = null!;
-    public Event<CheckoutTimeoutExpired> CheckoutTimeoutExpiredEvent { get; private set; } = null!;
 
     public Schedule<Order, CheckoutTimeoutExpired> CheckoutTimeout { get; private set; } = null!;
 
@@ -43,8 +42,14 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
         Event(() => PaymentAuthorisedEvent, x => x.CorrelateById(m => m.Message.CheckoutId));
         Event(() => PaymentFailedEvent, x => x.CorrelateById(m => m.Message.CheckoutId));
         Event(() => FulfillmentFailedEvent, x => x.CorrelateById(m => m.Message.CheckoutId));
-        Event(() => CheckoutTimeoutExpiredEvent, x => x.CorrelateById(m => m.Message.OrderId));
 
+        // NOTE: CheckoutTimeoutExpired does NOT get a separate Event<T> declaration/Event()
+        // registration — Schedule() below already registers it as CheckoutTimeout.Received
+        // (an Event<CheckoutTimeoutExpired>). Declaring both causes a runtime
+        // "An item with the same key has already been added" ArgumentException when
+        // MassTransit builds the saga's message specification dictionary (duplicate
+        // registration for the same message type). Use CheckoutTimeout.Received in When()
+        // calls below instead.
         Schedule(() => CheckoutTimeout, instance => instance.CheckoutTimeoutTokenId, s =>
         {
             s.Delay = TimeSpan.FromMinutes(15);
@@ -78,7 +83,12 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                     Amount: ctx.Message.TotalAmount,
                     SimulatePaymentFailure: ctx.Message.SimulatePaymentFailure))
                 .Schedule(CheckoutTimeout,
-                    ctx => ctx.Init<CheckoutTimeoutExpired>(new CheckoutTimeoutExpired(ctx.Saga.CorrelationId)),
+                    // ctx.Init<T>() populates a NEW T from a values object by matching property
+                    // names — it requires an anonymous object here, not a pre-constructed
+                    // CheckoutTimeoutExpired instance (records have no parameterless
+                    // constructor, so passing one directly throws "No default constructor
+                    // available for message type" at runtime).
+                    ctx => ctx.Init<CheckoutTimeoutExpired>(new { OrderId = ctx.Saga.CorrelationId }),
                     ctx => TimeSpan.FromMinutes(checkoutOptions.Value.TimeoutMinutes))
                 .TransitionTo(Pending));
 
@@ -130,7 +140,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                 .TransitionTo(Cancelled),
             // CHK-05: the checkout never received a payment outcome within the configured
             // timeout window — cancel deterministically with a distinct failure reason.
-            When(CheckoutTimeoutExpiredEvent)
+            When(CheckoutTimeout.Received)
                 .Then(ctx => ctx.Saga.FailureReason = "Checkout timed out before payment completed")
                 .Publish(ctx => new OrderStatusChanged(
                     MessageId: Guid.NewGuid(),
@@ -187,9 +197,22 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             // (PAY-03's idempotent Payments service may legitimately redeliver the same
             // stored outcome), can still arrive after the saga has already moved to Paid.
             // Absorb rather than fault.
-            When(CheckoutTimeoutExpiredEvent),
+            When(CheckoutTimeout.Received),
             When(PaymentAuthorisedEvent),
             When(PaymentFailedEvent),
+            When(OrderStatusChangedEvent));
+
+        // Cancelled is terminal and reachable from both Pending (PaymentFailed/timeout) and
+        // Paid (FulfillmentFailed) — both of those transitions also .Publish() an
+        // OrderStatusChanged event, and this saga is itself subscribed to
+        // OrderStatusChangedEvent (see Event() registration above, used by external
+        // redelivery per ORD-03). That self-published message loops back to this exact same
+        // saga instance's receive endpoint; without a catch-all here it raises
+        // UnhandledEventException/NotAcceptedStateMachineException once the saga has already
+        // reached Cancelled (discovered via saga unit tests — same class of race as Pitfall 2,
+        // just self-inflicted by this plan's own new Publish() activities rather than an
+        // external redelivery). Absorb rather than fault; no transition, stays terminal.
+        During(Cancelled,
             When(OrderStatusChangedEvent));
 
         SetCompletedWhenFinalized();
