@@ -58,6 +58,7 @@ public class OrderReadModelProjector(OrdersDbContext db)
             return; // No-op — matching write-side saga instance not yet projected (or unknown).
 
         readModel.Status = msg.NewStatus;
+        readModel.FailureReason = msg.FailureReason;
         readModel.UpdatedAt = msg.ChangedAt;
         await db.SaveChangesAsync(context.CancellationToken);
     }

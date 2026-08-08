@@ -30,6 +30,9 @@ try
 
     builder.AddNpgsqlDbContext<OrdersDbContext>("postgres");
 
+    builder.Services.Configure<CheckoutOptions>(
+        builder.Configuration.GetSection(CheckoutOptions.SectionName));
+
     builder.Services.AddMassTransit(x =>
     {
         x.AddSagaStateMachine<OrderStateMachine, Order>()
@@ -60,13 +63,26 @@ try
             // integration tests. Use MassTransit's in-memory transport so the bus outbox drainer
             // can still deliver OrderCreated/OrderStatusChanged to OrderReadModelProjector and the
             // saga within the same test process (ORD-04 eventual-consistency proof).
-            x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
+            //
+            // A scheduler must also be registered here (MassTransit.Quartz's non-durable
+            // in-memory scheduler) because Program.cs's in-memory branch is production code
+            // shared by BOTH the local dev fallback AND every WebApplicationFactory-based
+            // integration test, and OrderStateMachine now uses .Schedule()/.Unschedule() for
+            // CHK-05 — deviates from RESEARCH.md's "test project only" placement recommendation
+            // for exactly this reason (see ECommerce.Orders.API.csproj comment).
+            x.UsingInMemory((context, cfg) =>
+            {
+                cfg.UseInMemoryScheduler();
+                cfg.ConfigureEndpoints(context);
+            });
         }
         else
         {
+            x.AddServiceBusMessageScheduler();
             x.UsingAzureServiceBus((context, cfg) =>
             {
                 cfg.Host(messagingConnectionString);
+                cfg.UseServiceBusMessageScheduler();
                 cfg.ConfigureEndpoints(context);
             });
         }

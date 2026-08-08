@@ -15,4 +15,5 @@ public class OrderReadModel
     public List<OrderLineItem> LineItems { get; set; } = new();
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public string? FailureReason { get; set; }
 }
