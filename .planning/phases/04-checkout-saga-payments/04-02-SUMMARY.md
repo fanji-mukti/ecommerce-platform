@@ -176,3 +176,13 @@ completed: 2026-08-08
 ---
 *Phase: 04-checkout-saga-payments*
 *Completed: 2026-08-08*
+
+## Self-Check: PASSED
+
+All claimed files exist and all claimed commits are present in git history:
+- `spikes/04-asb-scheduling-spike/Program.cs` — FOUND
+- `docs/adr/0009-checkout-saga-state-reconciliation.md` — FOUND
+- `src/services/orders/ECommerce.Orders.API/Features/Orders/CheckoutOptions.cs` — FOUND
+- `src/services/orders/ECommerce.Orders.API/Migrations/20260808034000_AddCheckoutSagaFields.cs` — FOUND
+- `.planning/phases/04-checkout-saga-payments/04-02-SUMMARY.md` — FOUND
+- Commits `51852de`, `8f97947`, `10a4c3e`, `6a99fc6` — all FOUND in git log
