@@ -84,4 +84,38 @@ public class AuthorisePaymentConsumerTests : IAsyncLifetime
         await _steps.Then_ProcessedPaymentOutcomeIs(checkoutId, "Refunded");
         Assert.Equal(1, await _steps.Then_PublishedCount<PaymentRefunded>());
     }
+
+    [Fact]
+    public async Task AuthorisePayment_WhenRedeliveredAfterRefund_DoesNotRepublishAsPaymentFailed()
+    {
+        await _steps.Given_HarnessWithPostgresOutbox();
+
+        var checkoutId = Guid.NewGuid();
+        await _steps.Given_ProcessedPaymentExists(checkoutId, outcome: "Refunded", amount: 25.00m);
+
+        // WR-02: a redelivered AuthorisePayment for an already-refunded payment must be a
+        // no-op — never relabeled as PaymentFailed (which would smuggle a null Reason into a
+        // non-nullable contract field) nor as PaymentAuthorised.
+        await _steps.When_AuthorisePaymentPublished(checkoutId, amount: 25.00m);
+
+        await _steps.Then_ProcessedPaymentOutcomeIs(checkoutId, "Refunded");
+        Assert.Equal(0, await _steps.Then_PublishedCount<PaymentFailed>());
+        Assert.Equal(0, await _steps.Then_PublishedCount<PaymentAuthorised>());
+    }
+
+    [Fact]
+    public async Task RefundPayment_WhenPaymentWasNeverAuthorised_IsRejectedAsNoOp()
+    {
+        await _steps.Given_HarnessWithPostgresOutbox();
+
+        var checkoutId = Guid.NewGuid();
+        await _steps.Given_ProcessedPaymentExists(checkoutId, outcome: "Failed", amount: 25.00m);
+
+        // WR-03: RefundPaymentConsumer must reject refunding a payment whose outcome is not
+        // Authorised — defense-in-depth against refunding money that was never taken.
+        await _steps.When_RefundPaymentPublished(checkoutId, amount: 25.00m, reason: "Fulfillment failed");
+
+        await _steps.Then_ProcessedPaymentOutcomeIs(checkoutId, "Failed");
+        Assert.Equal(0, await _steps.Then_PublishedCount<PaymentRefunded>());
+    }
 }
