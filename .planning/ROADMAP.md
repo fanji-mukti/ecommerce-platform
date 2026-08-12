@@ -135,13 +135,13 @@ Plans:
 4. Fulfillment-failure compensation (simulated by a test trigger or seeded condition) causes the saga to publish `RefundPayment` and `CancelOrder`, leaving the system in a consistent terminal state.
 5. A checkout left incomplete for ~15 minutes triggers a saga timeout that cascades the same compensation path as an explicit failure, leaving no orphaned orders or payments.
 
-**Plans:** 1/6 plans executed
+**Plans:** 4/6 plans executed
 Plans:
 
 - [x] 04-01-PLAN.md — Message contracts (StartCheckout, AuthorisePayment/RefundPayment, PaymentAuthorised/PaymentFailed/PaymentRefunded, FulfillmentFailed) + AppHost/Gateway wiring for Checkout/Payments
-- [ ] 04-02-PLAN.md — Orders saga: Schedule/Unschedule timeout (CHK-05), typed payment/fulfillment events (CHK-03/CHK-04), ADR-0009, extended unit tests
-- [ ] 04-03-PLAN.md — Orders HTTP: POST /orders/checkout (replaces test-create-from-cart), GET /orders/{id} + FailureReason
-- [ ] 04-04-PLAN.md — Payments service: PaymentsDbContext, AuthorisePaymentConsumer/RefundPaymentConsumer, idempotency (PAY-01/02/03)
+- [x] 04-02-PLAN.md — Orders saga: Schedule/Unschedule timeout (CHK-05), typed payment/fulfillment events (CHK-03/CHK-04), ADR-0009, extended unit tests
+- [x] 04-03-PLAN.md — Orders HTTP: POST /orders/checkout (replaces test-create-from-cart), GET /orders/{id} + FailureReason
+- [x] 04-04-PLAN.md — Payments service: PaymentsDbContext, AuthorisePaymentConsumer/RefundPaymentConsumer, idempotency (PAY-01/02/03)
 - [ ] 04-05-PLAN.md — Checkout.API façade: POST /checkout, GET /checkout/{id}, demo fulfillment-failure trigger (CHK-01/02/04)
 - [ ] 04-06-PLAN.md — Angular /checkout + /orders/:id pages: stepper, polling, hint text, demo toggle (FE-03)
 
@@ -199,7 +199,7 @@ Plans:
 | 1. Foundations | 5/5 | Complete    | 2026-06-11 |
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
-| 4. Checkout Saga & Payments | 1/6 | In Progress|  |
+| 4. Checkout Saga & Payments | 4/6 | In Progress|  |
 | 5. Fulfillment & Notifications | 0/? | Not started | - |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
