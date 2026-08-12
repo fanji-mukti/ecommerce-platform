@@ -151,4 +151,88 @@ describe('CheckoutPageComponent', () => {
     await vi.advanceTimersByTimeAsync(3000);
     httpMock.verify();
   });
+
+  it('stops polling after the component is destroyed', async () => {
+    vi.useFakeTimers();
+    await TestBed.compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+
+    const fixture = TestBed.createComponent(CheckoutPageComponent);
+    fixture.detectChanges();
+
+    httpMock.expectOne('/api/cart').flush(nonEmptyCart);
+    fixture.detectChanges();
+
+    const compiled: HTMLElement = fixture.nativeElement;
+    const placeOrderButton = Array.from(compiled.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Place Order'),
+    ) as HTMLButtonElement;
+    placeOrderButton.dispatchEvent(new Event('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    httpMock.expectOne('/api/checkout').flush({ checkoutId: 'chk-1' });
+    fixture.detectChanges();
+
+    await vi.advanceTimersByTimeAsync(1500);
+    httpMock.expectOne('/api/checkout/chk-1').flush({
+      checkoutId: 'chk-1',
+      status: 'AwaitingPayment',
+      failureReason: null,
+    });
+    fixture.detectChanges();
+
+    fixture.destroy();
+
+    // No further HTTP request should occur after destroy, even after several more ticks.
+    await vi.advanceTimersByTimeAsync(3000);
+    httpMock.verify();
+  });
+
+  it('resumes polling the existing checkoutId when retry is clicked after a transient polling error', async () => {
+    vi.useFakeTimers();
+    await TestBed.compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const fixture = TestBed.createComponent(CheckoutPageComponent);
+    fixture.detectChanges();
+
+    httpMock.expectOne('/api/cart').flush(nonEmptyCart);
+    fixture.detectChanges();
+
+    const compiled: HTMLElement = fixture.nativeElement;
+    const placeOrderButton = Array.from(compiled.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Place Order'),
+    ) as HTMLButtonElement;
+    placeOrderButton.dispatchEvent(new Event('click', { bubbles: true }));
+    fixture.detectChanges();
+
+    httpMock.expectOne('/api/checkout').flush({ checkoutId: 'chk-1' });
+    fixture.detectChanges();
+
+    await vi.advanceTimersByTimeAsync(1500);
+    httpMock.expectOne('/api/checkout/chk-1').flush({
+      checkoutId: 'chk-1',
+      status: 'AwaitingPayment',
+      failureReason: null,
+    });
+    fixture.detectChanges();
+
+    await vi.advanceTimersByTimeAsync(1500);
+    httpMock.expectOne('/api/checkout/chk-1').error(new ProgressEvent('error'));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.hasError()).toBe(true);
+
+    fixture.componentInstance.retry();
+    fixture.detectChanges();
+
+    await vi.advanceTimersByTimeAsync(1500);
+    const req = httpMock.expectOne('/api/checkout/chk-1');
+    req.flush({ checkoutId: 'chk-1', status: 'Paid', failureReason: null });
+    fixture.detectChanges();
+
+    httpMock.verify();
+  });
 });
