@@ -34,8 +34,8 @@
 
 ### Checkout & Saga
 
-- [ ] **CHK-01**: User can initiate checkout and receive a checkoutId (202 Accepted)
-- [ ] **CHK-02**: User can poll checkout / order status via GET /checkout/{id}
+- [x] **CHK-01**: User can initiate checkout and receive a checkoutId (202 Accepted)
+- [x] **CHK-02**: User can poll checkout / order status via GET /checkout/{id}
 - [ ] **CHK-03**: Saga compensates on PaymentFailed — cancels the order
 - [ ] **CHK-04**: Saga compensates on FulfillmentFailed — refunds payment and cancels order
 - [ ] **CHK-05**: Saga times out after ~15 minutes if not completed (compensation triggered)
@@ -173,8 +173,8 @@
 | ORD-03 | Phase 3 | Pending |
 | ORD-04 | Phase 3 | Complete |
 | FE-02 | Phase 3 | Complete |
-| CHK-01 | Phase 4 | Pending |
-| CHK-02 | Phase 4 | Pending |
+| CHK-01 | Phase 4 | Complete |
+| CHK-02 | Phase 4 | Complete |
 | CHK-03 | Phase 4 | Pending |
 | CHK-04 | Phase 4 | Pending |
 | CHK-05 | Phase 4 | Pending |
