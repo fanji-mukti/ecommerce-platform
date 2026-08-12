@@ -39,6 +39,13 @@ public class AuthorisePaymentConsumer(PaymentsDbContext db, IPublishEndpoint pub
                     // A redelivered AuthorisePayment for an already-refunded payment must not
                     // be relabeled as PaymentFailed/PaymentAuthorised — no-op is correct.
                     break;
+                default:
+                    // 04-07-REVIEW WR-01: an unrecognized stored Outcome (a future value added
+                    // elsewhere without updating this consumer, or a corrupted row) must not
+                    // silently vanish with no publish, no log, and no exception — that's a
+                    // silent-failure risk for a payments consumer processing a redelivery.
+                    throw new InvalidOperationException(
+                        $"Unrecognized ProcessedPayment.Outcome '{existing.Outcome}' for checkout {msg.CheckoutId}.");
             }
 
             return;
