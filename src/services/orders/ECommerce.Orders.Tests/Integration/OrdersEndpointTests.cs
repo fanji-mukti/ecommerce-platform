@@ -13,40 +13,44 @@ public class OrdersEndpointTests(PostgresFixture fixture) : IClassFixture<Postgr
     private readonly OrdersEndpointSteps _steps = new(fixture);
 
     [Fact]
-    public async Task TestCreateFromCart_WhenCartIsEmpty_Returns400AndNeverCallsDelete()
+    public async Task Checkout_WhenCartIsEmpty_Returns400AndNeverCallsDelete()
     {
         _steps.Given_CartStubReturnsEmptyCart();
         _steps.Given_CartStubAcceptsClear();
 
-        var response = await _steps.When_TestCreateFromCartIsCalled(DefaultUserId);
+        var checkoutId = Guid.NewGuid();
+        var response = await _steps.When_CheckoutIsCalled(DefaultUserId, checkoutId);
 
         _steps.Then_ResponseIs400(response);
         _steps.DeleteCartCallCount().Should().Be(0);
     }
 
     [Fact]
-    public async Task TestCreateFromCart_WhenCartHasItems_Returns202AndClearsCartExactlyOnce()
+    public async Task Checkout_WhenCartHasItems_Returns202AndClearsCartExactlyOnceUsingCallerMintedCheckoutId()
     {
         var productId = Guid.NewGuid();
         _steps.Given_CartStubReturnsCartWithItems((productId, "Widget", 9.99m, 2));
         _steps.Given_CartStubAcceptsClear();
 
-        var response = await _steps.When_TestCreateFromCartIsCalled(DefaultUserId);
+        var checkoutId = Guid.NewGuid();
+        var response = await _steps.When_CheckoutIsCalled(DefaultUserId, checkoutId);
 
         var orderId = await _steps.Then_ResponseContainsOrderId(response);
-        orderId.Should().NotBeEmpty();
+        orderId.Should().Be(checkoutId);
         _steps.DeleteCartCallCount().Should().Be(1);
     }
 
     [Fact]
-    public async Task GetOrderById_AfterTestCreateFromCart_EventuallyBecomesVisible()
+    public async Task GetOrderById_AfterCheckout_EventuallyBecomesVisible()
     {
         var productId = Guid.NewGuid();
         _steps.Given_CartStubReturnsCartWithItems((productId, "Widget", 9.99m, 2));
         _steps.Given_CartStubAcceptsClear();
 
-        var createResponse = await _steps.When_TestCreateFromCartIsCalled(DefaultUserId);
+        var checkoutId = Guid.NewGuid();
+        var createResponse = await _steps.When_CheckoutIsCalled(DefaultUserId, checkoutId);
         var orderId = await _steps.Then_ResponseContainsOrderId(createResponse);
+        orderId.Should().Be(checkoutId);
 
         // Proves ORD-04's eventual consistency: the read model is populated asynchronously by
         // OrderReadModelProjector after the outbox delivers OrderCreated, so GET /orders/{id}

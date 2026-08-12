@@ -208,9 +208,20 @@ public class OrdersEndpointSteps : IDisposable
 
     // ----- When -----
 
-    public async Task<HttpResponseMessage> When_TestCreateFromCartIsCalled(string userId)
+    public async Task<HttpResponseMessage> When_CheckoutIsCalled(string userId, Guid checkoutId, bool simulatePaymentFailure = false)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, "/orders/test-create-from-cart");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/orders/checkout")
+        {
+            Content = JsonContent.Create(new
+            {
+                messageId = Guid.NewGuid(),
+                correlationId = checkoutId,
+                causationId = Guid.Empty,
+                occurredAt = DateTimeOffset.UtcNow,
+                checkoutId,
+                simulatePaymentFailure
+            })
+        };
         request.Headers.Add(TestAuthHandler.TestUserIdHeader, userId);
         return await Client.SendAsync(request);
     }
@@ -286,6 +297,9 @@ public class OrdersEndpointSteps : IDisposable
     // HttpResponseMessage throws ObjectDisposedException.
     public void Then_ResponseOrdersAreOrderedByCreatedAtDescending(PagedResult<OrderSummaryDto> body)
         => body.Items.Should().BeInDescendingOrder(o => o.CreatedAt);
+
+    public void Then_ResponseOrderHasFailureReason(OrderDto? body, string expectedReason)
+        => body!.FailureReason.Should().Be(expectedReason);
 
     public int DeleteCartCallCount()
         => _cartStub.LogEntries.Count(e => e.RequestMessage.Path == "/cart" && e.RequestMessage.Method == "DELETE");
