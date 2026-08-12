@@ -109,6 +109,47 @@ public class OrderStateMachineTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PaymentAuthorised_WhenAlreadyFulfilled_IsAbsorbedWithoutFault()
+    {
+        var orderId = Guid.NewGuid();
+
+        await _steps.Given_OrderCreatedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+
+        await _steps.Given_PaymentAuthorisedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Paid);
+
+        await _steps.When_OrderStatusChangedPublished(orderId, previousStatus: "Paid", newStatus: "Fulfilled");
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Fulfilled);
+
+        // 04-07-REVIEW CR-01: late/redelivered PaymentAuthorised arriving after the saga
+        // already reached the terminal Fulfilled state — must be absorbed, not faulted.
+        await _steps.Given_PaymentAuthorisedPublished(orderId);
+
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Fulfilled);
+        await _steps.Then_NoFaultPublished<PaymentAuthorised>();
+    }
+
+    [Fact]
+    public async Task PaymentFailed_WhenAlreadyFailed_IsAbsorbedWithoutFault()
+    {
+        var orderId = Guid.NewGuid();
+
+        await _steps.Given_OrderCreatedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+
+        await _steps.When_OrderStatusChangedPublished(orderId, previousStatus: "Pending", newStatus: "Failed");
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Failed);
+
+        // 04-07-REVIEW CR-01: late/redelivered PaymentFailed arriving after the saga already
+        // reached the terminal Failed state — must be absorbed, not faulted.
+        await _steps.Given_PaymentFailedPublished(orderId, reason: "Payment declined");
+
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Failed);
+        await _steps.Then_NoFaultPublished<PaymentFailed>();
+    }
+
+    [Fact]
     public async Task CheckoutTimeoutExpired_WhenPaymentOutcomeNeverArrives_TransitionsToCancelledWithFailureReason()
     {
         var orderId = Guid.NewGuid();

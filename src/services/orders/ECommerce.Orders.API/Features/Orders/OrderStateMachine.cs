@@ -229,6 +229,27 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             Ignore(FulfillmentFailedEvent),
             Ignore(OrderStatusChangedEvent));
 
+        // 04-07-REVIEW CR-01: Fulfilled and Failed are also terminal states reachable from
+        // Paid/Pending, but had zero During() bindings at all — any late/redelivered event
+        // (broker at-least-once redelivery of an already-consumed payment outcome, a stray
+        // CheckoutTimeout.Received that raced Unschedule(), etc.) arriving after the saga
+        // reaches either state faulted it, exactly the defect class the During(Cancelled, ...)
+        // catch-all above exists to close. Absorb rather than fault; no transition, stays
+        // terminal.
+        During(Fulfilled,
+            Ignore(CheckoutTimeout.Received),
+            Ignore(PaymentAuthorisedEvent),
+            Ignore(PaymentFailedEvent),
+            Ignore(FulfillmentFailedEvent),
+            Ignore(OrderStatusChangedEvent));
+
+        During(Failed,
+            Ignore(CheckoutTimeout.Received),
+            Ignore(PaymentAuthorisedEvent),
+            Ignore(PaymentFailedEvent),
+            Ignore(FulfillmentFailedEvent),
+            Ignore(OrderStatusChangedEvent));
+
         SetCompletedWhenFinalized();
     }
 }
