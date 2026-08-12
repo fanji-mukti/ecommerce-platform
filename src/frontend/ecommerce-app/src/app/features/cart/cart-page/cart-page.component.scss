@@ -56,7 +56,9 @@
       margin-bottom: 24px;
     }
 
-    button {
+    a[mat-raised-button] {
+      display: block;
+      text-align: center;
       width: 100%;
     }
   }

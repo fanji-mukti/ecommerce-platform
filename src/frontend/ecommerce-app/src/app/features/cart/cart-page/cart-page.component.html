@@ -41,9 +41,9 @@
                 <span>Total</span>
                 <span>{{ c.grandTotal | currency: 'USD' }}</span>
               </p>
-              <button mat-raised-button color="primary" disabled>
-                Proceed to Checkout — Coming Soon
-              </button>
+              <a mat-raised-button color="primary" routerLink="/checkout">
+                Proceed to Checkout
+              </a>
             </mat-card-content>
           </mat-card>
         </div>
