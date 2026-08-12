@@ -170,7 +170,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             // step, direct Paid->Cancelled (Open Question 2 resolved: no intermediate
             // "Refunding" state).
             When(FulfillmentFailedEvent)
-                .Then(ctx => ctx.Saga.FailureReason = "Fulfillment failed — order cancelled and refunded")
+                .Then(ctx => ctx.Saga.FailureReason = $"Fulfillment failed — order cancelled and refunded ({ctx.Message.Reason})")
                 .Publish(ctx => new RefundPayment(
                     MessageId: Guid.NewGuid(),
                     CorrelationId: ctx.Saga.CorrelationId,
@@ -196,11 +196,15 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             // unscheduled very close to its delivery time, or a redelivered payment outcome
             // (PAY-03's idempotent Payments service may legitimately redeliver the same
             // stored outcome), can still arrive after the saga has already moved to Paid.
-            // Absorb rather than fault.
-            When(CheckoutTimeout.Received),
-            When(PaymentAuthorisedEvent),
-            When(PaymentFailedEvent),
-            When(OrderStatusChangedEvent));
+            // Absorb rather than fault. NOTE: a bare When(event) with no further activity
+            // chain — verified against MassTransit 8.3.6 via the CR-01 regression test — does
+            // NOT actually register the event as accepted for a state where it has no other
+            // binding; it still throws NotAcceptedStateMachineException at runtime. Ignore(...)
+            // is the correct API for "accept and do nothing" (04-07 gap closure, Rule 1).
+            Ignore(CheckoutTimeout.Received),
+            Ignore(PaymentAuthorisedEvent),
+            Ignore(PaymentFailedEvent),
+            Ignore(OrderStatusChangedEvent));
 
         // Cancelled is terminal and reachable from both Pending (PaymentFailed/timeout) and
         // Paid (FulfillmentFailed) — both of those transitions also .Publish() an
@@ -211,9 +215,19 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
         // UnhandledEventException/NotAcceptedStateMachineException once the saga has already
         // reached Cancelled (discovered via saga unit tests — same class of race as Pitfall 2,
         // just self-inflicted by this plan's own new Publish() activities rather than an
-        // external redelivery). Absorb rather than fault; no transition, stays terminal.
+        // external redelivery). CR-01 (04-REVIEW.md): the same widened catch-all as
+        // During(Paid, ...) above is needed here too — a late/redelivered
+        // PaymentAuthorisedEvent, PaymentFailedEvent, FulfillmentFailedEvent, or
+        // CheckoutTimeout.Received can legitimately arrive after the saga has already reached
+        // Cancelled (broker at-least-once redelivery, or a double-clicked demo trigger racing
+        // the eventually-consistent read model). Absorb rather than fault; no transition,
+        // stays terminal.
         During(Cancelled,
-            When(OrderStatusChangedEvent));
+            Ignore(CheckoutTimeout.Received),
+            Ignore(PaymentAuthorisedEvent),
+            Ignore(PaymentFailedEvent),
+            Ignore(FulfillmentFailedEvent),
+            Ignore(OrderStatusChangedEvent));
 
         SetCompletedWhenFinalized();
     }

@@ -1,4 +1,5 @@
 using ECommerce.Payments.Commands.V1;
+using ECommerce.Payments.Events.V1;
 using Xunit;
 
 namespace ECommerce.Orders.Tests.Unit;
@@ -84,8 +85,27 @@ public class OrderStateMachineTests : IAsyncLifetime
         await _steps.When_FulfillmentFailedPublished(orderId, reason: "Warehouse out of stock");
 
         await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Cancelled);
-        await _steps.Then_SagaHasFailureReason(orderId, "Fulfillment failed — order cancelled and refunded");
+        await _steps.Then_SagaHasFailureReason(orderId, "Fulfillment failed — order cancelled and refunded (Warehouse out of stock)");
         await _steps.Then_MessagePublished<RefundPayment>(msg => msg.CheckoutId == orderId);
+    }
+
+    [Fact]
+    public async Task PaymentAuthorised_WhenAlreadyCancelled_IsAbsorbedWithoutFault()
+    {
+        var orderId = Guid.NewGuid();
+
+        await _steps.Given_OrderCreatedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+
+        await _steps.Given_PaymentFailedPublished(orderId, reason: "Payment declined");
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Cancelled);
+
+        // Late/redelivered PaymentAuthorised arriving after the saga already reached the
+        // terminal Cancelled state (CR-01) — must be absorbed, not faulted.
+        await _steps.Given_PaymentAuthorisedPublished(orderId);
+
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Cancelled);
+        await _steps.Then_NoFaultPublished<PaymentAuthorised>();
     }
 
     [Fact]
