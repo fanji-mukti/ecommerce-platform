@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using ECommerce.Checkout.Commands.V1;
 using ECommerce.Orders.API.Data;
 using ECommerce.Orders.Events.V1;
 using MassTransit;
@@ -57,10 +58,12 @@ public static class OrdersEndpoints
             return Results.Ok(mapper.ToDto(order));
         }).RequireAuthorization();
 
-        // DEMO-ONLY endpoint for Phase 3 (D-01/D-02). This is NOT a production checkout flow —
-        // Phase 4 replaces/wraps it with the real saga-driven /checkout endpoint. It exists
-        // purely to give the Orders read-model skeleton something to display and exercise.
-        app.MapPost("/orders/test-create-from-cart", async (
+        // Real saga-driven checkout entry point (Phase 4). Replaces Phase 3's demo-only
+        // order-creation trigger endpoint (D-01/D-02). The caller-minted checkoutId (from
+        // Checkout.API) is reused directly as the OrderId/saga CorrelationId so no separate
+        // id-minting round trip is needed.
+        app.MapPost("/orders/checkout", async (
+            [Microsoft.AspNetCore.Mvc.FromBody] StartCheckout request,
             HttpContext httpContext,
             ClaimsPrincipal user,
             ICartClient cartClient,
@@ -75,14 +78,17 @@ public static class OrdersEndpoints
             if (cart is null || cart.Items.Count == 0)
                 return Results.BadRequest(new { error = "Cart is empty." });
 
-            var orderId = Guid.NewGuid();
+            // Reuse the caller-minted checkoutId as the OrderId/saga CorrelationId — never
+            // regenerate it here (T-04-07: worst case is a self-chosen id, no cross-user impact
+            // since UserId is still derived from the JWT claim, not the request body).
+            var orderId = request.CheckoutId;
             var now = DateTimeOffset.UtcNow;
             var totalAmount = cart.Items.Sum(i => i.UnitPrice * i.Quantity);
 
             await publishEndpoint.Publish(new OrderCreated(
                 MessageId: Guid.NewGuid(),
                 CorrelationId: orderId,
-                CausationId: Guid.Empty,
+                CausationId: request.MessageId,
                 OccurredAt: now,
                 OrderId: orderId,
                 UserId: userId,
@@ -90,7 +96,8 @@ public static class OrdersEndpoints
                     .Select(i => new OrderLineItemData(i.ProductId, i.ProductName, i.UnitPrice, i.Quantity))
                     .ToList(),
                 TotalAmount: totalAmount,
-                CreatedAt: now), ct);
+                CreatedAt: now,
+                SimulatePaymentFailure: request.SimulatePaymentFailure), ct);
 
             // Flush the transactional outbox (same OrdersDbContext.SaveChangesAsync call) BEFORE
             // clearing the cart — CART-04 must only fire once OrderCreated is durably published.
@@ -98,11 +105,7 @@ public static class OrdersEndpoints
 
             await cartClient.ClearCartAsync(token, ct);
 
-            return Results.Accepted($"/orders/{orderId}", new
-            {
-                orderId,
-                note = "DEMO-ONLY endpoint for Phase 3 — Phase 4 replaces this with the real saga-driven /checkout flow."
-            });
+            return Results.Accepted($"/orders/{orderId}", new { orderId });
         }).RequireAuthorization();
     }
 
