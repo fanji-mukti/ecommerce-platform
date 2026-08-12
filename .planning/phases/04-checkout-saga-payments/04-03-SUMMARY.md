@@ -97,3 +97,12 @@ This is an environment limitation, not a functional gap in the code changes — 
 ---
 *Phase: 04-checkout-saga-payments*
 *Completed: 2026-08-12*
+
+## Self-Check: PASSED
+
+- FOUND: src/services/orders/ECommerce.Orders.API/Features/Orders/OrderDto.cs
+- FOUND: src/services/orders/ECommerce.Orders.API/Features/Orders/OrdersEndpoints.cs
+- FOUND: .planning/phases/04-checkout-saga-payments/04-03-SUMMARY.md
+- FOUND: commit 32582e8 (feat: POST /orders/checkout, OrderDto.FailureReason)
+- FOUND: commit eb476c1 (test: Orders integration suite update)
+- FOUND: commit 57cfaf1 (docs: plan summary)
