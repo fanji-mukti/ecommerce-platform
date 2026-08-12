@@ -150,6 +150,24 @@ public class OrderStateMachineTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task OrderCreated_WhenRedeliveredWhilePending_IsAbsorbedWithoutFault()
+    {
+        var orderId = Guid.NewGuid();
+
+        await _steps.Given_OrderCreatedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+
+        // 04-07-REVIEW CR-02: a redelivered OrderCreated for a saga instance that already
+        // exists and is Pending — OrderCreatedEvent was only bound inside Initially(...), so
+        // this previously faulted. Must be absorbed, not faulted, and the saga must remain in
+        // Pending.
+        await _steps.Given_OrderCreatedPublished(orderId);
+
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+        await _steps.Then_NoFaultPublished<ECommerce.Orders.Events.V1.OrderCreated>();
+    }
+
+    [Fact]
     public async Task CheckoutTimeoutExpired_WhenPaymentOutcomeNeverArrives_TransitionsToCancelledWithFailureReason()
     {
         var orderId = Guid.NewGuid();

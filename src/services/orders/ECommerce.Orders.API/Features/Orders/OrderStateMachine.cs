@@ -153,6 +153,12 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                     ChangedAt: DateTimeOffset.UtcNow,
                     FailureReason: ctx.Saga.FailureReason))
                 .TransitionTo(Cancelled),
+            // 04-07-REVIEW CR-02: OrderCreatedEvent was only bound inside Initially(...) — a
+            // redelivered OrderCreated for a saga instance that has already left the Initial
+            // pseudo-state (i.e. already Pending) was unhandled and faulted. Absorb rather than
+            // fault; the saga instance already exists and was already initialised from the
+            // first delivery.
+            Ignore(OrderCreatedEvent),
             When(OrderStatusChangedEvent));
 
         // Paid -> Fulfilled / Cancelled / Failed, with the same trailing catch-all pattern.
@@ -204,7 +210,10 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             Ignore(CheckoutTimeout.Received),
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
-            Ignore(OrderStatusChangedEvent));
+            Ignore(OrderStatusChangedEvent),
+            // 04-07-REVIEW CR-02: see the matching Ignore(OrderCreatedEvent) note in
+            // During(Pending, ...) above — a redelivered OrderCreated must be absorbed here too.
+            Ignore(OrderCreatedEvent));
 
         // Cancelled is terminal and reachable from both Pending (PaymentFailed/timeout) and
         // Paid (FulfillmentFailed) — both of those transitions also .Publish() an
@@ -227,7 +236,10 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
             Ignore(FulfillmentFailedEvent),
-            Ignore(OrderStatusChangedEvent));
+            Ignore(OrderStatusChangedEvent),
+            // 04-07-REVIEW CR-02: see the matching Ignore(OrderCreatedEvent) note in
+            // During(Pending, ...) above — a redelivered OrderCreated must be absorbed here too.
+            Ignore(OrderCreatedEvent));
 
         // 04-07-REVIEW CR-01: Fulfilled and Failed are also terminal states reachable from
         // Paid/Pending, but had zero During() bindings at all — any late/redelivered event
@@ -241,14 +253,20 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
             Ignore(FulfillmentFailedEvent),
-            Ignore(OrderStatusChangedEvent));
+            Ignore(OrderStatusChangedEvent),
+            // 04-07-REVIEW CR-02: see the matching Ignore(OrderCreatedEvent) note in
+            // During(Pending, ...) above — a redelivered OrderCreated must be absorbed here too.
+            Ignore(OrderCreatedEvent));
 
         During(Failed,
             Ignore(CheckoutTimeout.Received),
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
             Ignore(FulfillmentFailedEvent),
-            Ignore(OrderStatusChangedEvent));
+            Ignore(OrderStatusChangedEvent),
+            // 04-07-REVIEW CR-02: see the matching Ignore(OrderCreatedEvent) note in
+            // During(Pending, ...) above — a redelivered OrderCreated must be absorbed here too.
+            Ignore(OrderCreatedEvent));
 
         SetCompletedWhenFinalized();
     }
