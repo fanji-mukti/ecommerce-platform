@@ -14,9 +14,12 @@ public class RefundPaymentConsumer(PaymentsDbContext db, IPublishEndpoint publis
         var now = DateTimeOffset.UtcNow;
 
         var existing = await db.ProcessedPayments.FindAsync([msg.CheckoutId], context.CancellationToken);
-        if (existing is null || existing.Outcome == "Refunded")
+        if (existing is null || existing.Outcome != "Authorised")
         {
-            // Idempotent no-op: nothing to refund, or already refunded (T-04-10).
+            // Idempotent no-op: nothing to refund, already refunded (T-04-10), or the
+            // payment was never authorised in the first place (WR-03 — defense-in-depth
+            // against refunding money that was never taken; the saga cannot currently reach
+            // this path in normal flow, but the consumer itself must guard the precondition).
             return;
         }
 

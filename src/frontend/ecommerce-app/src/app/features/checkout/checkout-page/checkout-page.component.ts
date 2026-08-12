@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -36,6 +37,7 @@ export class CheckoutPageComponent implements OnInit {
   private cartService = inject(CartService);
   private checkoutService = inject(CheckoutService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   cart = signal<Cart | null>(null);
   isLoading = signal<boolean>(false);
@@ -77,6 +79,16 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   retry(): void {
+    // WR-04: if a checkout has already been placed (checkoutId is set), a transient polling
+    // error should resume polling that SAME checkout rather than re-fetching the cart — the
+    // order already exists, and reloading the cart would not help/could even be misleading.
+    // Only fall back to loadCart() when the cart-load path itself is what failed (checkoutId
+    // still null).
+    if (this.checkoutId()) {
+      this.hasError.set(false);
+      this.startPolling(this.checkoutId()!);
+      return;
+    }
     this.loadCart();
   }
 
@@ -108,6 +120,10 @@ export class CheckoutPageComponent implements OnInit {
           this.currentStatus.set(status.status);
           return !this.isTerminal(status.status);
         }, true),
+        // WR-04: tear down the polling subscription on component destroy — without this, a
+        // user navigating away from /checkout before reaching a terminal status and later
+        // returning could accumulate duplicate concurrent polling loops.
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: (status) => {

@@ -67,11 +67,13 @@ public static class CheckoutEndpoints
             if (snapshot.Status != "Paid")
                 return Results.BadRequest(new { error = "Order is not in a state that can simulate a fulfillment failure." });
 
-            // Checkout.API does not invent the failure reason string — only the saga does
-            // (Plan 04-02), Checkout.API only publishes the trigger event.
+            // WR-01 (04-REVIEW.md): Checkout.API supplies the real, demo-specific fulfillment
+            // failure reason here; the saga (OrderStateMachine.During(Paid, When(FulfillmentFailedEvent)))
+            // reads ctx.Message.Reason and formats it into the final human-readable
+            // Order.FailureReason rather than inventing its own generic string.
             await publishEndpoint.Publish(new FulfillmentFailed(
                 Guid.NewGuid(), id, Guid.Empty, DateTimeOffset.UtcNow, id,
-                "Fulfillment failed — order cancelled and refunded", DateTimeOffset.UtcNow), ct);
+                "Warehouse out of stock", DateTimeOffset.UtcNow), ct);
 
             return Results.Accepted();
         }).RequireAuthorization();

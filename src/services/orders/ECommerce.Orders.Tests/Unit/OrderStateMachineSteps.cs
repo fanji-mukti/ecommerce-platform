@@ -198,4 +198,10 @@ public class OrderStateMachineSteps : IAsyncLifetime
         (await _harness!.Published.Any<T>(ctx => predicate(ctx.Context.Message)))
             .Should().BeTrue($"a matching {typeof(T).Name} message should have been published");
     }
+
+    public async Task Then_NoFaultPublished<T>() where T : class
+    {
+        (await _harness!.Published.Any<Fault<T>>())
+            .Should().BeFalse($"a {typeof(T).Name} arriving after the saga reached a terminal state should be absorbed by the During(Cancelled, ...) catch-all, not faulted");
+    }
 }

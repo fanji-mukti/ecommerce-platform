@@ -19,17 +19,26 @@ public class AuthorisePaymentConsumer(PaymentsDbContext db, IPublishEndpoint pub
         if (existing is not null)
         {
             // PAY-03: replay the STORED outcome — never recompute or re-insert on redelivery.
-            if (existing.Outcome == "Authorised")
+            // WR-02: branch on the actual stored Outcome rather than a binary Authorised/else
+            // check — a redelivered AuthorisePayment for a payment that was later refunded
+            // must not be relabeled as PaymentFailed (which would also smuggle a null
+            // FailureReason into the non-nullable PaymentFailed.Reason contract field).
+            switch (existing.Outcome)
             {
-                await publish.Publish(new PaymentAuthorised(
-                    Guid.NewGuid(), msg.CheckoutId, msg.MessageId, now,
-                    msg.CheckoutId, existing.Amount, existing.ProcessedAt), context.CancellationToken);
-            }
-            else
-            {
-                await publish.Publish(new PaymentFailed(
-                    Guid.NewGuid(), msg.CheckoutId, msg.MessageId, now,
-                    msg.CheckoutId, existing.Amount, existing.FailureReason!, existing.ProcessedAt), context.CancellationToken);
+                case "Authorised":
+                    await publish.Publish(new PaymentAuthorised(
+                        Guid.NewGuid(), msg.CheckoutId, msg.MessageId, now,
+                        msg.CheckoutId, existing.Amount, existing.ProcessedAt), context.CancellationToken);
+                    break;
+                case "Failed":
+                    await publish.Publish(new PaymentFailed(
+                        Guid.NewGuid(), msg.CheckoutId, msg.MessageId, now,
+                        msg.CheckoutId, existing.Amount, existing.FailureReason!, existing.ProcessedAt), context.CancellationToken);
+                    break;
+                case "Refunded":
+                    // A redelivered AuthorisePayment for an already-refunded payment must not
+                    // be relabeled as PaymentFailed/PaymentAuthorised — no-op is correct.
+                    break;
             }
 
             return;
