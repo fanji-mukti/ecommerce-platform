@@ -159,7 +159,13 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             // fault; the saga instance already exists and was already initialised from the
             // first delivery.
             Ignore(OrderCreatedEvent),
-            When(OrderStatusChangedEvent));
+            // 04-07-REVIEW WR-02: previously a bare When(OrderStatusChangedEvent) with no
+            // activity chain. Switched to Ignore(...) for consistency with every other
+            // trailing catch-all in this file (Paid/Cancelled/Fulfilled/Failed all use
+            // Ignore(...) already) — see the WR-02 note on During(Paid, ...) below for why the
+            // original rationale for that split (a claimed bare-When() runtime failure) does
+            // not actually hold here.
+            Ignore(OrderStatusChangedEvent));
 
         // Paid -> Fulfilled / Cancelled / Failed, with the same trailing catch-all pattern.
         During(Paid,
@@ -202,11 +208,14 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             // unscheduled very close to its delivery time, or a redelivered payment outcome
             // (PAY-03's idempotent Payments service may legitimately redeliver the same
             // stored outcome), can still arrive after the saga has already moved to Paid.
-            // Absorb rather than fault. NOTE: a bare When(event) with no further activity
-            // chain — verified against MassTransit 8.3.6 via the CR-01 regression test — does
-            // NOT actually register the event as accepted for a state where it has no other
-            // binding; it still throws NotAcceptedStateMachineException at runtime. Ignore(...)
-            // is the correct API for "accept and do nothing" (04-07 gap closure, Rule 1).
+            // Absorb rather than fault. Ignore(...) is the correct API for "accept and do
+            // nothing" here. 04-07-REVIEW WR-02: an earlier version of this comment claimed a
+            // bare When(event) with no activity chain does NOT register as accepted and still
+            // throws NotAcceptedStateMachineException — that claim is unverified/overstated:
+            // During(Pending, ...)'s own trailing bare When(OrderStatusChangedEvent) catch-all
+            // passed its test with no fault. Ignore(...) is used here regardless, for
+            // consistency across all five During() blocks in this file (all now use Ignore(...)
+            // for their catch-alls) — not because bare When() is provably broken.
             Ignore(CheckoutTimeout.Received),
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
