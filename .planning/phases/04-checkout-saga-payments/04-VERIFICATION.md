@@ -1,58 +1,38 @@
 ---
 phase: 04-checkout-saga-payments
-verified: 2026-08-12T00:00:00Z
-status: gaps_found
-score: 4/5 must-haves verified
+verified: 2026-08-13T23:15:00Z
+status: human_needed
+score: 5/5 must-haves verified
 overrides_applied: 0
-gaps:
-  - truth: "Fulfillment-failure and timeout compensation paths leave the saga in a consistent terminal state (SC4/SC5) — no unhandled faults on late/redelivered events"
-    status: failed
-    reason: >
-      OrderStateMachine.cs's `During(Cancelled, ...)` only absorbs a redelivered
-      OrderStatusChangedEvent. It does NOT absorb PaymentAuthorisedEvent,
-      PaymentFailedEvent, or FulfillmentFailedEvent — all three of which can
-      legitimately arrive after the saga has already transitioned to Cancelled
-      (broker redelivery of an idempotent Payments outcome, a CHK-05 timeout that
-      fires before an in-flight AuthorisePayment resolves, or a double-clicked
-      demo fulfillment-failure trigger racing the read-model's eventual
-      consistency). When any of these three events arrives while the saga is in
-      Cancelled, MassTransit throws UnhandledEventException, faulting the
-      consumer and routing the message to the retry/dead-letter path instead of
-      leaving the saga in the "consistent terminal state" SC4/SC5 explicitly
-      require. `During(Paid, ...)` already defends against the equivalent race
-      (see the "Pitfall 2" catch-all at lines 195-203) — `During(Cancelled, ...)`
-      was left with only a partial catch-all. Reproduction path confirmed by
-      direct code read (OrderStateMachine.cs:215-216) and independently
-      identified by 04-REVIEW.md (CR-01, critical severity). No unit test exists
-      for this scenario — the existing 6 saga unit tests
-      (OrderStateMachineTests.cs) cover only the direct/happy paths for
-      CHK-03/CHK-04/CHK-05, not post-Cancelled redelivery.
-    artifacts:
-      - path: "src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs"
-        issue: "During(Cancelled, ...) at lines 215-216 lacks When(PaymentAuthorisedEvent), When(PaymentFailedEvent), When(FulfillmentFailedEvent) — throws UnhandledEventException on redelivery/race"
-    missing:
-      - "Extend During(Cancelled, ...) to also absorb CheckoutTimeout.Received, PaymentAuthorisedEvent, PaymentFailedEvent, and FulfillmentFailedEvent (mirroring the During(Paid, ...) catch-all), per 04-REVIEW.md CR-01's suggested fix"
-      - "A regression unit test that publishes PaymentAuthorisedEvent (or PaymentFailedEvent / FulfillmentFailedEvent) to a saga instance already in Cancelled and asserts no exception is thrown and state remains Cancelled"
+re_verification:
+  previous_status: gaps_found
+  previous_score: 4/5
+  gaps_closed:
+    - "Fulfillment-failure and timeout compensation paths leave the saga in a consistent terminal state (SC4/SC5) — During(Cancelled, ...) now absorbs all four late/redelivered event types instead of only OrderStatusChangedEvent"
+  gaps_remaining: []
+  regressions: []
 human_verification:
   - test: "Run the full Docker Compose / Aspire stack and click through Cart -> /checkout -> Place Order -> watch the mat-stepper update in real time -> auto-redirect to /orders/:id, for both a normal-priced cart (happy path) and a .99-ending cart (PaymentFailed demo trigger)"
     expected: "Stepper advances Started -> AwaitingPayment -> Paid (or -> Cancelled with a visible failure reason), page auto-navigates to /orders/:id with no manual refresh, matching SC1/SC2/SC3"
-    why_human: "Sandboxed environment has no Docker/npipe access — Testcontainers-based integration tests and the live Aspire/ASB stack could not be exercised end-to-end in this verification pass. Only build success, in-memory saga unit tests, and static code wiring were verifiable."
-  - test: "Click 'simulate fulfillment failure' on a Paid order via the checkout/order-detail UI, twice in rapid succession"
-    expected: "Second click either no-ops cleanly or is rejected — no dead-lettered message, no crashed consumer"
-    why_human: "Confirms/refutes the CR-01 double-click reproduction path (CheckoutEndpoints.cs's Paid-status check races the read model) against a live running system; cannot be proven by static analysis alone, only that the code path exists as described."
-  - test: "Leave a checkout un-actioned past the configured production timeout (or temporarily lower Checkout:TimeoutMinutes) and observe whether any in-flight AuthorisePayment response arrives after the timeout has already cancelled the order"
-    expected: "No UnhandledEventException / faulted consumer / dead-lettered message in Orders.API logs"
-    why_human: "This is the primary real-world trigger for the CR-01 gap (Pending -> timeout -> Cancelled, then a late PaymentAuthorised/PaymentFailed arrives) and requires live timing-dependent observation."
+    why_human: "Sandboxed environment has no Docker/npipe access (confirmed again this pass — Testcontainers-based integration tests fail with DockerUnavailableException). Only build success, in-memory saga unit tests, Angular unit tests, and static code wiring were independently verifiable."
+  - test: "Click 'simulate fulfillment failure' on a Paid order via the checkout/order-detail UI, twice in rapid succession, against a live running system (real ASB, not the in-memory harness)"
+    expected: "Second delivery is absorbed by During(Cancelled, ...)'s Ignore(FulfillmentFailedEvent) — no dead-lettered message, no faulted consumer. This is now proven by an in-memory saga-harness unit test (PaymentAuthorised_WhenAlreadyCancelled_IsAbsorbedWithoutFault and siblings), but has not been observed against a real broker with real at-least-once redelivery timing."
+    why_human: "In-memory MassTransit test harness proves the state-machine logic is correct; it does not prove ASB's actual redelivery/concurrency behavior matches the harness's synchronous delivery model."
+  - test: "Leave a checkout un-actioned past the configured 15-minute timeout (or temporarily lower Checkout:TimeoutMinutes) on a live running system and observe whether any in-flight AuthorisePayment response arrives after the timeout has already cancelled the order"
+    expected: "No UnhandledEventException / faulted consumer / dead-lettered message in Orders.API logs — During(Cancelled, ...) now ignores PaymentAuthorisedEvent/PaymentFailedEvent"
+    why_human: "Primary real-world trigger for the original CR-01 gap; requires live timing-dependent observation against the real ASB emulator, not just the in-memory harness."
 ---
+
+**Post-verification addendum (2026-08-13):** The WARNING-level "New Finding" below (`During(Pending, ...)` missing `Ignore(FulfillmentFailedEvent)`) was closed immediately after this verification pass, commit `a692bff` — the one-line `Ignore(FulfillmentFailedEvent)` was added to `During(Pending, ...)` along with a new regression test (`FulfillmentFailed_WhenPending_IsAbsorbedWithoutFault`). Full `OrderStateMachineTests` suite re-run: 11/11 unit tests pass (up from 10; only the same 8 pre-existing Docker-dependent integration tests fail). All five `During()` blocks now bind or ignore all six registered event types with zero remaining gaps. `WR-03` (concurrent-redelivery race protection) remains the sole explicitly-deferred item, documented in `04-07-REVIEW-FIX.md` as a recommended follow-up before Phase 6.
 
 # Phase 4: Checkout Saga & Payments Verification Report
 
 **Phase Goal:** A user clicks "Place Order" and the checkout saga orchestrates Order creation, simulated payment, and compensation paths end-to-end — the headline demo.
-**Verified:** 2026-08-12T00:00:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Verified:** 2026-08-13T23:15:00Z
+**Status:** human_needed
+**Re-verification:** Yes — after gap closure (04-07 + 04-07-REVIEW-FIX)
 
-**Note on phase mode:** ROADMAP.md marks this phase `Mode: mvp`, but the phase goal text ("A user clicks..." — not "As a [role], I want to [capability], so that [outcome].") fails `user-story.validate` (`valid: false`). Per the MVP-mode protocol this would normally require refusing verification and asking for `/gsd mvp-phase 04`. Since the launching orchestrator invoked this verification as a standard goal-backward pass (not MVP-narrowed) and full goal-backward verification is strictly more thorough than the MVP-narrowed variant, this report proceeds with standard verification rather than refusing outright. Flagging the ROADMAP mode/goal-format mismatch for the user's attention — the ROADMAP.md entry should either be updated with a proper User Story goal or have `Mode: mvp` removed.
+**Context:** This is the third verification pass for this phase. The first pass (`04-VERIFICATION.md`, superseded by this file) found a BLOCKER: `During(Cancelled, ...)` faulted on late/redelivered `PaymentAuthorisedEvent`/`PaymentFailedEvent`/`FulfillmentFailedEvent` (CR-01). Plan 04-07 attempted to close this. A scoped code review of 04-07's own changes (`04-07-REVIEW.md`) then found the fix was *itself* incomplete — `During(Fulfilled, ...)` and `During(Failed, ...)` had **zero** event bindings at all (same defect class, wider surface), and `OrderCreatedEvent` was unbound in every `During()` block. Those second-order gaps were closed via `04-07-REVIEW-FIX.md` (commits `8c75754`, `2ec58a3`, `338ff88`, `c995c26`). This pass independently re-derives and re-verifies the current state of `OrderStateMachine.cs` from the actual file contents and a live test run — not from any of the prior narrative documents.
 
 ## Goal Achievement
 
@@ -60,62 +40,57 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | SC1 — User can POST `/checkout` (202 + checkoutId) then poll `GET /checkout/{id}`, reflected live in Angular `/checkout` and `/orders/:id` | ✓ VERIFIED | `CheckoutEndpoints.cs` implements both routes; `checkout-page.component.ts` polls every 1500ms via `interval(1500).pipe(switchMap(...))` and navigates to `/orders/:id` on terminal state; `order-detail.component.ts` renders status + failure reason; routes registered in `app.routes.ts`. (See WARNING below — polling subscription is never torn down on navigate-away, a robustness gap, not a functional failure of the happy path.) |
-| 2 | SC2 — Happy path drives `Started -> AwaitingPayment -> Paid`, idempotent payment processing keyed by `checkoutId` | ✓ VERIFIED | `OrderStateMachine.Initially()` publishes `AuthorisePayment` immediately on `OrderCreated` and transitions `Pending`; `PaymentAuthorisedEvent` transitions `Pending -> Paid`. `AuthorisePaymentConsumer` looks up `ProcessedPayment` by `CheckoutId` (EF `HasKey(p => p.CheckoutId)` + unique index) before ever inserting — redelivery replays the stored outcome instead of reprocessing (PAY-03). Confirmed by direct code read of `PaymentsDbContext.cs` and `AuthorisePaymentConsumer.cs`. |
-| 3 | SC3 — `.99`-ending cart deterministically triggers `PaymentFailed`; saga cancels the order | ✓ VERIFIED | `AuthorisePaymentConsumer.cs`: `cents == 99m` deterministic rule; `OrderStateMachine`'s `During(Pending, When(PaymentFailedEvent)...)` sets `FailureReason` and transitions to `Cancelled`. Unit test `PaymentFailed_WhenPending_TransitionsToCancelledWithFailureReason` executed live in this verification pass (in-memory, no Docker required) — **passed**. |
-| 4 | SC4/SC5 — Fulfillment-failure and 15-minute-timeout compensation both cascade `RefundPayment`/cancel and leave the system in a **consistent terminal state** | ✗ FAILED | `During(Cancelled, ...)` (`OrderStateMachine.cs:215-216`) only absorbs `OrderStatusChangedEvent` — a redelivered `PaymentAuthorisedEvent`, `PaymentFailedEvent`, or `FulfillmentFailedEvent` arriving after the saga reaches `Cancelled` throws `UnhandledEventException`, faulting the consumer instead of remaining terminal/consistent. Confirmed by direct code read; independently identified as CR-01 (critical) in `04-REVIEW.md`. The happy-path compensation flow itself (single `FulfillmentFailed` -> `RefundPayment` + `Cancelled`, and single timeout -> `Cancelled`) IS proven correct by passing unit tests and a live ASB-emulator spike (`SPIKE-RESULT: PASS`, `spikes/04-asb-scheduling-spike/Program.cs`, observed 2026-08-08) — the gap is specifically the redelivery/race edge case both SC4 and SC5's "consistent terminal state" language commits to. |
-| 5 | The Azure Service Bus emulator's scheduled-message delivery (CHK-05's mechanism) is proven, not assumed, before being relied on | ✓ VERIFIED | Standalone spike (`spikes/04-asb-scheduling-spike/Program.cs`) directly exercises `ServiceBusClient`/`ScheduledEnqueueTime` against the real emulator image, independent of the saga/HTTP stack. Documented result in `04-RESEARCH.md`: `SPIKE-RESULT: PASS — message was delivered on or after the scheduled time`. This satisfies plan 04-02's own must-have about resolving Open Question 1 with an observed outcome. |
+| 1 | SC1 — User can POST `/checkout` (202 + checkoutId) then poll `GET /checkout/{id}`, reflected live in Angular `/checkout` and `/orders/:id` | ✓ VERIFIED | `CheckoutEndpoints.cs` implements both routes; `checkout-page.component.ts` polls every 1500ms via `interval(1500).pipe(switchMap(...), takeWhile(...), takeUntilDestroyed(...))` and navigates to `/orders/:id` on terminal state; routes confirmed registered in `app.routes.ts` (`checkout`, `orders/:id`). `CheckoutStatusMapper` correctly translates Orders' persisted vocabulary (Pending/Paid/Cancelled/Failed/Fulfilled) to the checkout-facing vocabulary (Started/AwaitingPayment/Paid/Cancelled/Failed/Fulfilled). |
+| 2 | SC2 — Happy path drives `Started -> AwaitingPayment -> Paid`, idempotent payment processing keyed by `checkoutId` | ✓ VERIFIED | `OrderStateMachine.Initially()` publishes `AuthorisePayment` and transitions `Pending`; `During(Pending, When(PaymentAuthorisedEvent)...)` transitions to `Paid`. `AuthorisePaymentConsumer` looks up `ProcessedPayment` by `CheckoutId` (PK) before ever inserting — redelivery replays the stored outcome via a full `switch` over `Outcome` (`Authorised`/`Failed`/`Refunded`/`default→throw`), never reprocessing (PAY-03). Confirmed by direct code read of `AuthorisePaymentConsumer.cs`. |
+| 3 | SC3 — `.99`-ending cart deterministically triggers `PaymentFailed`; saga cancels the order | ✓ VERIFIED | `AuthorisePaymentConsumer.cs`: `cents == 99m` deterministic rule (line 56). `During(Pending, When(PaymentFailedEvent)...)` sets `FailureReason` and transitions to `Cancelled`. Regression test `PaymentFailed_WhenPending_TransitionsToCancelledWithFailureReason` executed live in this pass — **passed** (see Behavioral Spot-Checks). |
+| 4 | SC4 — Fulfillment-failure compensation publishes `RefundPayment` + cancels the order, leaving a **consistent terminal state** | ✓ VERIFIED (gap closed) | `During(Paid, When(FulfillmentFailedEvent)...)` publishes `RefundPayment` then `OrderStatusChanged(NewStatus="Cancelled")`, transitions to `Cancelled`. `During(Cancelled, ...)` now `Ignore()`s all of `CheckoutTimeout.Received`, `PaymentAuthorisedEvent`, `PaymentFailedEvent`, `FulfillmentFailedEvent`, `OrderStatusChangedEvent`, `OrderCreatedEvent` — confirmed by direct read of `OrderStateMachine.cs:243-251`. Regression tests `PaymentAuthorised_WhenAlreadyCancelled_IsAbsorbedWithoutFault` and `PaymentAuthorised_WhenAlreadyFulfilled_IsAbsorbedWithoutFault` executed live in this pass — **passed**. |
+| 5 | SC5 — ~15-minute timeout cascades the same compensation path, leaving no orphaned orders/payments | ✓ VERIFIED (gap closed) | `Schedule(CheckoutTimeout, ...)` set to `TimeSpan.FromMinutes(checkoutOptions.Value.TimeoutMinutes)`; `CheckoutOptions.TimeoutMinutes` defaults to `15` (`appsettings.json` and `CheckoutOptions.cs` both confirmed). `During(Pending, When(CheckoutTimeout.Received)...)` transitions to `Cancelled` with a distinct failure reason. A late `PaymentAuthorisedEvent`/`PaymentFailedEvent` arriving after this transition is now absorbed by `During(Cancelled, ...)`'s widened catch-all (same evidence as truth #4). Regression test `CheckoutTimeoutExpired_WhenPaymentOutcomeNeverArrives_TransitionsToCancelledWithFailureReason` executed live in this pass — **passed**. `During(Fulfilled, ...)` and `During(Failed, ...)` — previously **zero bindings at all** (04-07-REVIEW CR-01) — now both `Ignore()` all six event types identically to `During(Cancelled, ...)`; regression tests `PaymentAuthorised_WhenAlreadyFulfilled_IsAbsorbedWithoutFault` and `PaymentFailed_WhenAlreadyFailed_IsAbsorbedWithoutFault` executed live — **passed**. `OrderCreatedEvent` — previously unbound in every `During()` block (04-07-REVIEW CR-02) — now `Ignore()`d in all five; regression test `OrderCreated_WhenRedeliveredWhilePending_IsAbsorbedWithoutFault` executed live — **passed**. |
 
-**Score:** 4/5 truths verified (1 FAILED — see gap above; classified BLOCKER per adversarial stance since it is a correctness defect directly in the compensation path that is this phase's headline demo mechanic)
+**Score:** 5/5 truths verified. The prior BLOCKER (CR-01) and its own second-order gaps (04-07-REVIEW's CR-01/CR-02) are closed and independently confirmed against the current file contents and a live test run, not just the narrative in 04-07-REVIEW-FIX.md.
+
+### New Finding — Not a Blocker, Flagged for Attention
+
+Independently auditing all five `During()` blocks against all six registered event types (`OrderCreatedEvent`, `OrderStatusChangedEvent`, `PaymentAuthorisedEvent`, `PaymentFailedEvent`, `FulfillmentFailedEvent`, `CheckoutTimeout.Received`) — the exact check this verification pass was asked to perform — turned up one remaining gap of the *same defect class*, not previously identified in any prior review:
+
+**`During(Pending, ...)` (`OrderStateMachine.cs:100-168`) has no binding — not even an `Ignore(...)` — for `FulfillmentFailedEvent`.** Every other block (`Paid`, `Cancelled`, `Fulfilled`, `Failed`) binds or ignores all six event types; `Pending` covers five of six. If a `FulfillmentFailedEvent` message were ever delivered to a saga instance still in `Pending`, MassTransit would raise the same `UnhandledEventException`/fault that CR-01 and CR-02 both existed to eliminate.
+
+**Reachability assessed and found currently unreachable in production code:** the only publisher of `FulfillmentFailed` in this codebase is `CheckoutEndpoints.cs`'s demo trigger (`POST /checkout/{id}/simulate-fulfillment-failure`), which reads the order snapshot from `IOrdersClient.GetStatusAsync` (the Orders read model) and rejects with `400` unless `snapshot.Status == "Paid"` (line 67-68). That read model is itself populated by consuming the saga's own `OrderStatusChanged(NewStatus="Paid")` event — so by construction, the read model cannot report `"Paid"` before the saga instance has already left `Pending`. No other code path publishes `FulfillmentFailed` (confirmed by `grep -rn "new FulfillmentFailed("` — only the demo endpoint and the test harness). This means the gap cannot currently be triggered by any exercised code path, unlike CR-01/CR-02 which were reachable through ordinary broker redelivery of already-wired publishers.
+
+**Why this still matters:** Phase 5 (Fulfillment service) is expected to introduce a real publisher of `FulfillmentFailed` that will not necessarily be gated the same way the demo endpoint is, and the entire point of the CR-01/CR-02 fix cycle was to make every `During()` block defensively absorb every registered event regardless of whether a reachability analysis currently rules it out (that exact reasoning is what let CR-01/CR-02 slip through two review passes). This is classified as a **WARNING**, not a BLOCKER, because none of the 5 roadmap success criteria are violated by it today and no test demonstrates an actual fault — but it is a real, specific, and easily-closed gap (`Ignore(FulfillmentFailedEvent)` added to `During(Pending, ...)`, one line) that a future maintainer or Phase 5 planner should not have to rediscover.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/building-blocks/Contracts/Checkout/Commands/V1/StartCheckout.cs` | Internal HTTP contract Checkout.API -> Orders.API | ✓ VERIFIED | Exists, used by `OrdersClient`/`OrdersEndpoints` |
-| `src/building-blocks/Contracts/Payments/Commands/V1/AuthorisePayment.cs` | Saga -> Payments command | ✓ VERIFIED | Published from `OrderStateMachine.Initially()`, consumed by `AuthorisePaymentConsumer` |
-| `src/building-blocks/Contracts/Payments/Events/V1/PaymentFailed.cs` | Payments -> saga event (CHK-03) | ✓ VERIFIED | Published by `AuthorisePaymentConsumer`, consumed by `OrderStateMachine` |
-| `src/building-blocks/Contracts/Fulfillment/Events/V1/FulfillmentFailed.cs` | Demo trigger -> saga event (CHK-04) | ✓ VERIFIED | Published by `CheckoutEndpoints`'s demo trigger, consumed by `OrderStateMachine` |
-| `src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs` | Extended saga: typed events, Schedule/Unschedule timeout, Paid->Cancelled compensation | ⚠️ VERIFIED-WITH-DEFECT | Exists, substantive, wired, happy paths pass unit tests — but `During(Cancelled, ...)` is an incomplete catch-all (see gap #1) |
-| `src/services/orders/ECommerce.Orders.API/Features/Orders/CheckoutOptions.cs` | Configurable `Checkout:TimeoutMinutes` | ✓ VERIFIED | Consumed by `OrderStateMachine` constructor via `IOptions<CheckoutOptions>`; test override to 0.05 min proven by `CheckoutTimeoutExpired_WhenPaymentOutcomeNeverArrives_TransitionsToCancelledWithFailureReason` (passed live) |
-| `docs/adr/0009-checkout-saga-state-reconciliation.md` | MADR record of "Started" synthesis decision | ✓ VERIFIED | File exists (listed in 04-REVIEW.md's files_reviewed) |
-| `spikes/04-asb-scheduling-spike/Program.cs` | Standalone ASB scheduling proof | ✓ VERIFIED | Exists, runnable, documented PASS result |
-| `src/services/orders/ECommerce.Orders.API/Features/Orders/OrdersEndpoints.cs` | `POST /orders/checkout` (replaces test-create-from-cart), `GET /orders/{id}` + FailureReason | ✓ VERIFIED | `test-create-from-cart` fully removed (`grep -c` returns 0 in repo); `POST /orders/checkout` present; `OrderDto.FailureReason` present and populated by `OrderReadModelProjector` |
-| `src/services/payments/ECommerce.Payments.API/Features/Payments/ProcessedPayment.cs` | Idempotency-key entity, unique index on CheckoutId | ✓ VERIFIED | `HasKey(p => p.CheckoutId)` + `HasIndex(...).IsUnique()` in `PaymentsDbContext.OnModelCreating` |
-| `src/services/payments/ECommerce.Payments.API/Features/Payments/AuthorisePaymentConsumer.cs` | PAY-01/02/03 processing logic | ⚠️ VERIFIED-WITH-WARNING | Core PAY-01/02/03 logic correct and idempotent (never double-processes); WR-02 (04-REVIEW.md) — replay after a "Refunded" outcome mislabels the event as `PaymentFailed` with a null `Reason` smuggled into a non-nullable field. Edge case, not on the primary demo path; not a truth-blocking defect but a real bug. |
-| `src/services/payments/ECommerce.Payments.API/Features/Payments/RefundPaymentConsumer.cs` | Idempotent refund processing | ⚠️ VERIFIED-WITH-WARNING | WR-03 (04-REVIEW.md) — will refund a `Failed` (never-authorised) payment if reached; unreachable through the current saga's normal flow (RefundPayment only published from Paid, which requires prior authorisation), so low practical risk but no defense-in-depth guard |
-| `src/services/checkout/ECommerce.Checkout.API/Features/Checkout/CheckoutEndpoints.cs` | `POST /checkout`, `GET /checkout/{id}`, demo fulfillment-failure trigger | ✓ VERIFIED | All three routes present, ownership-checked, `RequireAuthorization()` |
-| `src/frontend/ecommerce-app/src/app/features/checkout/checkout-page/checkout-page.component.ts` | mat-stepper, ~1.5s polling, demo toggle, auto-redirect | ⚠️ VERIFIED-WITH-WARNING | All functional behavior present and wired; WR-04 (04-REVIEW.md) — polling subscription has no `ngOnDestroy`/`takeUntilDestroyed()` cleanup and the error-recovery button re-fetches the cart rather than resuming polling. Confirmed by direct code read (no `OnDestroy` implemented in the class). |
-| `src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.ts` | Route param -> `GET /api/orders/{id}` -> status + failureReason | ✓ VERIFIED | Confirmed by direct code read; `showFailureReason` computed signal correctly gates on `FAILURE_STATUSES` |
-| `src/frontend/ecommerce-app/src/app/app.routes.ts` | `/checkout` and `/orders/:id` routes | ✓ VERIFIED | Both routes present |
+| `src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs` | All 5 `During()` blocks bind/ignore all registered event types; CR-01/CR-02 fully closed | ⚠️ VERIFIED-WITH-WARNING | 4/5 blocks (`Paid`, `Cancelled`, `Fulfilled`, `Failed`) are complete; `Pending` is missing `Ignore(FulfillmentFailedEvent)` — see New Finding above. Not reachable via any current code path. |
+| `src/services/orders/ECommerce.Orders.Tests/Unit/OrderStateMachineTests.cs` | 10 unit tests incl. 3 new CR-01/CR-02 regressions | ✓ VERIFIED | Compiled and executed directly in this pass: `Total: 10, Errors: 0, Failed: 0`. All 3 new regression tests (`PaymentAuthorised_WhenAlreadyFulfilled_IsAbsorbedWithoutFault`, `PaymentFailed_WhenAlreadyFailed_IsAbsorbedWithoutFault`, `OrderCreated_WhenRedeliveredWhilePending_IsAbsorbedWithoutFault`) present and passing. |
+| `src/services/payments/ECommerce.Payments.API/Features/Payments/AuthorisePaymentConsumer.cs` | WR-01 default-arm throw, WR-02 full Outcome switch | ✓ VERIFIED | `switch (existing.Outcome)` has `case "Authorised"`, `case "Failed"`, `case "Refunded"`, `default: throw new InvalidOperationException(...)`. Confirmed at lines 26-49. |
+| `src/services/payments/ECommerce.Payments.API/Features/Payments/RefundPaymentConsumer.cs` | WR-03 `existing.Outcome != "Authorised"` guard | ✓ VERIFIED | Confirmed at line 17. Concurrency-race hardening (optimistic concurrency token) explicitly deferred, not silently dropped — documented in `04-07-REVIEW-FIX.md` as a recommended follow-up plan before Phase 6. |
+| `src/frontend/ecommerce-app/src/app/features/checkout/checkout-page/checkout-page.component.ts` | WR-04 `takeUntilDestroyed` + resumable retry | ✓ VERIFIED | `takeUntilDestroyed(this.destroyRef)` present as the final pipe operator (line 126); `retry()` branches on `checkoutId()` being set to resume polling instead of unconditionally reloading the cart (lines 81-93). Angular unit tests (6/6) executed live in this pass — passed. |
+| `docs/adr/0009-checkout-saga-state-reconciliation.md` | MADR record of "Started" synthesis decision | ✓ VERIFIED | Exists (unchanged since prior pass, not re-read in full this pass — no code in this file was touched by 04-07/04-07-REVIEW-FIX). |
+| `src/services/orders/ECommerce.Orders.API/Features/Orders/CheckoutOptions.cs` | Configurable `Checkout:TimeoutMinutes`, default 15 | ✓ VERIFIED | `public double TimeoutMinutes { get; set; } = 15;` confirmed; `appsettings.json` also sets `15`. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|-----|-----|--------|---------|
-| `OrderStateMachine.Initially()` | `AuthorisePayment` | `Publish(ctx => new AuthorisePayment(...))` | ✓ WIRED | Confirmed at line 77 |
-| `OrderStateMachine During(Pending)` | `CheckoutTimeout` schedule | `Schedule(CheckoutTimeout, ...)`/`.Unschedule(CheckoutTimeout)` | ✓ WIRED | Confirmed; Unschedule called on both `PaymentAuthorisedEvent` and `PaymentFailedEvent` |
-| `spikes/04-asb-scheduling-spike/Program.cs` | RESEARCH.md Open Question 1 | Observed PASS/FAIL recorded back into RESEARCH.md | ✓ WIRED | `SPIKE-RESULT: PASS` recorded with observation date/method in `04-RESEARCH.md` |
-| `POST /orders/checkout` | `OrderCreated` | `IPublishEndpoint.Publish` + `SaveChangesAsync` (outbox) | ✓ WIRED | Confirmed |
-| `GET /orders/{id}` | `OrderDto.FailureReason` | `OrderMapper.ToDto` | ✓ WIRED | Confirmed |
-| `AuthorisePaymentConsumer` | `ProcessedPayment` | Unique index on CheckoutId, look-up-before-decide | ✓ WIRED | Confirmed |
-| `AuthorisePaymentConsumer` | `PaymentAuthorised`/`PaymentFailed` | `IPublishEndpoint.Publish` before `SaveChangesAsync` (outbox) | ✓ WIRED | Confirmed |
-| `POST /checkout` | `POST /orders/checkout` | `IOrdersClient.StartCheckoutAsync` (sync HTTP, bearer forwarded) | ✓ WIRED | Confirmed |
-| `GET /checkout/{id}` | `GET /orders/{id}` | `IOrdersClient.GetStatusAsync` — 404 mapped to synthetic "Started" | ✓ WIRED | Confirmed |
-| `POST /checkout/{id}/simulate-fulfillment-failure` | `FulfillmentFailed` | `IPublishEndpoint.Publish` | ✓ WIRED | Confirmed |
-| `cart-page.component.html` | `/checkout` | `routerLink="/checkout"` | ✓ WIRED | Confirmed, enabled button |
-| `checkout-page.component.ts` | `GET /api/checkout/{id}` | `interval(1500).pipe(switchMap(...))` | ✓ WIRED | Confirmed |
-| `checkout-page.component.ts` terminal state | `/orders/:id` | `router.navigate(['/orders', id])` | ✓ WIRED | Confirmed |
-| `During(Cancelled, ...)` | late `PaymentAuthorisedEvent`/`PaymentFailedEvent`/`FulfillmentFailedEvent` | (none — missing) | ✗ NOT_WIRED | This is the CR-01 gap: the link the "Paid" state already has (see Pitfall 2 catch-all) does not exist for "Cancelled" |
+| `During(Cancelled, ...)` | late `PaymentAuthorisedEvent`/`PaymentFailedEvent`/`FulfillmentFailedEvent`/`CheckoutTimeout.Received`/`OrderStatusChangedEvent`/`OrderCreatedEvent` | `Ignore(...)` catch-all | ✓ WIRED | Was `NOT_WIRED` in the prior pass (CR-01) — now confirmed wired for all 6 event types at `OrderStateMachine.cs:243-251`. |
+| `During(Fulfilled, ...)` | all 6 event types | `Ignore(...)` catch-all | ✓ WIRED | Previously had **zero** bindings (04-07-REVIEW CR-01) — now confirmed wired at lines 260-268. |
+| `During(Failed, ...)` | all 6 event types | `Ignore(...)` catch-all | ✓ WIRED | Previously had **zero** bindings (04-07-REVIEW CR-01) — now confirmed wired at lines 270-278. |
+| `During(Pending, ...)` | `OrderCreatedEvent`, `OrderStatusChangedEvent`, `PaymentAuthorisedEvent`, `PaymentFailedEvent`, `CheckoutTimeout.Received` | `When(...)`/`Ignore(...)` | ✓ WIRED | 5 of 6 registered event types bound. |
+| `During(Pending, ...)` | `FulfillmentFailedEvent` | (none — missing) | ✗ NOT_WIRED | New finding — see above. Not currently reachable, classified WARNING not BLOCKER. |
+| `AuthorisePaymentConsumer` | `PaymentAuthorised`/`PaymentFailed` (redelivery replay) | `switch (existing.Outcome)` with `default: throw` | ✓ WIRED | Confirmed; WR-01/WR-02 both closed. |
+| `RefundPaymentConsumer` | `ProcessedPayment.Outcome` guard | `existing.Outcome != "Authorised"` | ✓ WIRED | Confirmed; WR-03 closed for the sequential case. Concurrent-redelivery race explicitly deferred (documented, not silent). |
+| `checkout-page.component.ts startPolling()` | `DestroyRef` | `takeUntilDestroyed(this.destroyRef)` | ✓ WIRED | Confirmed; WR-04 closed. |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| Orders solution builds cleanly | `dotnet build src/services/orders/Orders.sln` | 0 errors, 67 warnings (pre-existing NuGet advisories + Mapperly unmapped-member warnings, unrelated to this phase) | ✓ PASS |
-| Saga unit tests (in-memory, no Docker) | `ECommerce.Orders.Tests.exe -class ECommerce.Orders.Tests.Unit.OrderStateMachineTests` | `Total: 6, Errors: 0, Failed: 0` | ✓ PASS |
-| Integration tests requiring Testcontainers/Postgres | `ECommerce.Orders.Tests.exe` (full suite) | `Total: 14, Failed: 8` — all 8 failures are `DockerUnavailableException` (`npipe://./pipe/docker_engine` unreachable in this sandbox) | ? SKIP (environment limitation, not a code defect — consistent with the note provided for this verification pass) |
-| Angular unit/component tests | Not re-run in this pass | Per task brief, already run live during execution: 16/16 passed, `tsc --noEmit` clean | ? SKIP (accepted on the executor's reported live run; independently confirmed by direct code read of the components it covers) |
+| Orders saga unit tests (in-memory, no Docker) | `ECommerce.Orders.Tests.exe -class ECommerce.Orders.Tests.Unit.OrderStateMachineTests` (run directly by this verifier, not trusted from SUMMARY) | `Total: 10, Errors: 0, Failed: 0, Time: 32.994s` | ✓ PASS |
+| Full Orders test suite (incl. Docker-dependent integration tests) | `ECommerce.Orders.Tests.exe` (full suite) | `Total: 18, Errors: 0, Failed: 8` — all 8 failures are `DotNet.Testcontainers.Builders.DockerUnavailableException` (`npipe://./pipe/docker_engine` unreachable) | ? SKIP (environment limitation, not a code defect — Docker Desktop unavailable in this sandbox, consistent across all three verification passes of this phase) |
+| Angular checkout-page unit tests | `npx vitest --run src/app/features/checkout` (run directly by this verifier) | `Test Files 1 passed (1), Tests 6 passed (6)` | ✓ PASS |
+| Claimed commits exist and match description | `git show --stat -1 8c75754 2ec58a3 338ff88 c995c26` | All 4 commits found, messages match `04-07-REVIEW-FIX.md`'s claims exactly | ✓ PASS |
 
 ### Probe Execution
 
@@ -127,44 +102,40 @@ No `scripts/*/tests/probe-*.sh` convention found and no plan/summary declares pr
 |-------------|-------------|--------------|--------|----------|
 | CHK-01 | 04-01, 04-03, 04-05, 04-06 | User can initiate checkout and receive a checkoutId (202) | ✓ SATISFIED | `POST /checkout` returns 202 + checkoutId |
 | CHK-02 | 04-03, 04-05, 04-06 | User can poll checkout/order status via GET /checkout/{id} | ✓ SATISFIED | `GET /checkout/{id}` implemented and polled by Angular |
-| CHK-03 | 04-02 | Saga compensates on PaymentFailed — cancels the order | ✓ SATISFIED (happy path) | `During(Pending, When(PaymentFailedEvent)...)`, passing unit test |
-| CHK-04 | 04-02, 04-05 | Saga compensates on FulfillmentFailed — refunds payment and cancels order | ⚠️ SATISFIED WITH DEFECT | Happy path works and is tested; redelivery-after-Cancelled path (CR-01) throws `UnhandledEventException` — see gap #1 |
-| CHK-05 | 04-02 | Saga times out after ~15 min if not completed (compensation triggered) | ⚠️ SATISFIED WITH DEFECT | Timeout mechanism proven via spike + short-timeout unit test; same CR-01 redelivery defect applies to this path too (a late payment outcome after a timeout-triggered Cancelled) |
+| CHK-03 | 04-02, 04-07 | Saga compensates on PaymentFailed — cancels the order | ✓ SATISFIED | `During(Pending, When(PaymentFailedEvent)...)`; unit test passes live |
+| CHK-04 | 04-02, 04-05, 04-07 | Saga compensates on FulfillmentFailed — refunds payment and cancels order | ✓ SATISFIED | `During(Paid, When(FulfillmentFailedEvent)...)` publishes RefundPayment + Cancelled; CR-01 redelivery-after-Cancelled gap now closed |
+| CHK-05 | 04-02, 04-07 | Saga times out after ~15 min if not completed (compensation triggered) | ✓ SATISFIED | Timeout mechanism proven via spike + short-timeout unit test; CR-01/CR-02 redelivery defects closed |
 | PAY-01 | 04-01, 04-04 | Simulated payment service processes AuthorisePayment commands | ✓ SATISFIED | `AuthorisePaymentConsumer` |
 | PAY-02 | 04-04 | Amounts ending in .99 deterministically trigger PaymentFailed | ✓ SATISFIED | `cents == 99m` rule, confirmed |
-| PAY-03 | 04-04 | Payment processing is idempotent by checkoutId | ✓ SATISFIED (core case) | `ProcessedPayment` PK + unique index on `CheckoutId`, look-up-before-decide; WR-02's mislabeling edge case (post-refund replay) does not cause double-processing, only a mislabeled event on redelivery — documented as a warning, not a PAY-03 blocker |
-| FE-03 | 04-06 | User can complete checkout and see order status updating in real-time via polling | ✓ SATISFIED (functionally) | mat-stepper, 1.5s polling, auto-redirect all present and wired; WR-04's subscription-leak is a robustness gap on navigate-away, not a failure of the core real-time-update behavior |
+| PAY-03 | 04-04, 04-07 | Payment processing is idempotent by checkoutId | ✓ SATISFIED (sequential case) | `ProcessedPayment` PK + unique index, full outcome-switch redelivery handling. Concurrent (not sequential) redelivery race explicitly deferred — documented follow-up, not a PAY-03 blocker per the requirement's own wording ("idempotent by checkoutId", which the sequential/at-least-once redelivery case satisfies). |
+| FE-03 | 04-06, 04-07 | User can complete checkout and see order status updating in real-time via polling | ✓ SATISFIED | mat-stepper, 1.5s polling with `takeUntilDestroyed`, auto-redirect all present and wired; Angular unit tests pass live |
 
-No orphaned requirements: all 9 requirement IDs assigned to this phase (CHK-01 through CHK-05, PAY-01 through PAY-03, FE-03) are claimed by at least one plan's frontmatter and independently confirmed against REQUIREMENTS.md's Checkout & Saga / Payments / Angular Frontend sections.
+No orphaned requirements: all 9 requirement IDs assigned to this phase (CHK-01 through CHK-05, PAY-01 through PAY-03, FE-03) are claimed by at least one plan's frontmatter.
 
-**Note on REQUIREMENTS.md staleness:** REQUIREMENTS.md's own checkbox list and traceability table still mark CHK-03, CHK-05, and FE-03 as unchecked/"Pending" (not yet updated to reflect Phase 4 completion) while CHK-01, CHK-02, CHK-04, PAY-01/02/03 are marked complete. This is a documentation-sync gap in REQUIREMENTS.md itself (likely not yet updated post-phase), not a code gap — flagging for the orchestrator to update REQUIREMENTS.md's status markers once this phase's gaps are closed.
+**REQUIREMENTS.md staleness (carried forward from prior pass, still unresolved):** REQUIREMENTS.md's own checkbox list and traceability table still mark CHK-03, CHK-05, and FE-03 as unchecked/"Pending" as of this verification, despite all 9 phase-4 requirements now being satisfied in code. This is a documentation-sync gap in REQUIREMENTS.md itself, not a code gap — flagging again for the orchestrator to update REQUIREMENTS.md's status markers now that this phase's blocker is closed.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs` | 215-216 | Incomplete catch-all in `During(Cancelled, ...)` | 🛑 BLOCKER | CR-01 — `UnhandledEventException` on redelivered payment/fulfillment events after Cancelled (see gap #1) |
-| `src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs` | 172-173 | `FulfillmentFailedEvent` handler discards `ctx.Message.Reason`, hardcodes a generic string | ⚠️ WARNING | WR-01 — future real Fulfillment failure reasons silently lost |
-| `src/services/payments/ECommerce.Payments.API/Features/Payments/AuthorisePaymentConsumer.cs` | 19-36 | Binary `Authorised`/else branch on redelivery, ignores `"Refunded"` outcome | ⚠️ WARNING | WR-02 — mislabels a refunded payment as `PaymentFailed` with a smuggled-null `Reason` on redelivery |
-| `src/services/payments/ECommerce.Payments.API/Features/Payments/RefundPaymentConsumer.cs` | 16-21 | Idempotency guard allows refunding a `Failed` (never-authorised) payment | ⚠️ WARNING | WR-03 — no defense-in-depth guard against refunding money never taken; unreachable via current saga flow |
-| `src/frontend/ecommerce-app/src/app/features/checkout/checkout-page/checkout-page.component.ts` | 103-126 | Polling subscription never torn down; error handler has no path back to resumed polling | ⚠️ WARNING | WR-04 — duplicate concurrent polling loops possible on navigate-away-and-back; users stuck on unrelated error screen after a transient network blip |
-| `src/services/checkout/ECommerce.Checkout.API/Features/Checkout/CheckoutEndpoints.cs` | 80-83 | Dead code — `GetUserId` defined, never called | ℹ️ INFO | IN-01 — no functional impact |
-| `src/frontend/ecommerce-app/src/app/features/cart/cart-page/cart-page.component.scss` | 1-73 | Hardcoded pixel spacing instead of `var(--space-*)` tokens | ℹ️ INFO | IN-02 — cosmetic/consistency only |
-| `spikes/04-asb-scheduling-spike/docker-compose.yml` | 6 | Hardcoded plaintext DB password | ℹ️ INFO | IN-03 — spike-only, local-only, low risk |
+| `src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs` | 100-168 | `During(Pending, ...)` has no binding for `FulfillmentFailedEvent` | ⚠️ WARNING | New finding (this pass) — same defect class as the now-closed CR-01/CR-02, but currently unreachable via any exercised code path. See "New Finding" section above for full analysis and suggested one-line fix. |
+| `src/services/payments/ECommerce.Payments.API/Features/Payments/RefundPaymentConsumer.cs` / `AuthorisePaymentConsumer.cs` | 16-24 / 18-52 | Idempotency guard has no optimistic-concurrency protection against truly concurrent (not sequential) redeliveries | ⚠️ WARNING | WR-03 residual (04-07-REVIEW.md) — explicitly deferred, documented in `04-07-REVIEW-FIX.md` as a recommended follow-up before Phase 6 hardening. Not silently dropped. |
 
-No `TBD`/`FIXME`/`XXX` debt markers found in any file modified by this phase.
+No `TBD`/`FIXME`/`XXX` debt markers found in any file touched by 04-07 or 04-07-REVIEW-FIX.
 
 ### Human Verification Required
 
-See `human_verification` in frontmatter — three items, all centering on live/Docker-based confirmation of (a) the full happy-path demo flow end-to-end and (b) the two concrete reproduction paths for the CR-01 critical gap (double-click on the demo trigger; a payment outcome arriving after a timeout-triggered cancellation).
+See `human_verification` in frontmatter — three items, all centering on live/Docker-based confirmation against a real Azure Service Bus broker (as opposed to the in-memory MassTransit test harness, which has now proven the saga logic itself is correct). This sandboxed environment has no Docker/npipe access in any of the three verification passes conducted for this phase.
 
 ### Gaps Summary
 
-The phase's happy-path saga orchestration (order creation -> payment authorisation -> Paid) and both single-shot compensation paths (explicit PaymentFailed, explicit FulfillmentFailed, and a single un-raced timeout) are real, wired, and proven by passing unit tests plus a live ASB-emulator spike — this is not a stub or placeholder phase. However, the saga's `Cancelled` terminal state has an incomplete event catch-all: any of the three newly-introduced typed events (`PaymentAuthorisedEvent`, `PaymentFailedEvent`, `FulfillmentFailedEvent`) arriving after the saga has already reached `Cancelled` throws `UnhandledEventException`, faulting the MassTransit consumer. This is directly reachable through ordinary demo/production conditions this phase itself introduces (a timeout racing an in-flight payment response; a double-clicked fulfillment-failure demo button racing the eventually-consistent read model) — not a contrived edge case. Because compensation-path robustness is explicitly named in both SC4 ("leaving the system in a consistent terminal state") and SC5 (identical language) of this phase's own success criteria, and because compensation paths are half of this phase's headline demo goal, this is classified as a BLOCKER, matching 04-REVIEW.md's own CR-01 critical classification. The fix is small and precisely scoped (extend `During(Cancelled, ...)` to mirror `During(Paid, ...)`'s existing catch-all, per 04-REVIEW.md's suggested fix) and does not require replanning the phase's architecture.
+The BLOCKER identified in the original `04-VERIFICATION.md` (CR-01: `During(Cancelled, ...)` faulting on late/redelivered events) is closed, and independently re-verified against the current file contents (not the narrative documents) plus a live execution of all 10 `OrderStateMachineTests` (0 failures) and all 6 Angular checkout-page tests (0 failures). The second-order gaps found by the scoped `04-07-REVIEW.md` (CR-01 extended: `Fulfilled`/`Failed` had zero bindings at all; CR-02: `OrderCreatedEvent` unbound everywhere) are also closed and independently confirmed, with matching commits (`8c75754`, `2ec58a3`, `338ff88`, `c995c26`) verified to exist and match their claimed descriptions.
 
-The four review warnings (FulfillmentFailed.Reason discarded, AuthorisePaymentConsumer post-refund mislabeling, RefundPaymentConsumer missing defense-in-depth, checkout-page polling subscription leak) do not block the headline demo path and are documented above as WARNING-severity anti-patterns for the closure plan to address alongside CR-01, but are not independently gating this verification's status.
+Performing the same systematic per-event-type audit this verification was tasked with across all five `During()` blocks turned up one additional, narrower instance of the same defect class that neither `04-REVIEW.md` nor `04-07-REVIEW.md` identified: `During(Pending, ...)` has no binding for `FulfillmentFailedEvent`. Careful reachability analysis shows this cannot currently be triggered by any code path in this repository (the only publisher of `FulfillmentFailed` is gated by a read-model check that structurally cannot pass before the saga has already left `Pending`), so it is classified as a WARNING rather than a BLOCKER and does not gate this phase's completion — but it is flagged explicitly so it is not rediscovered a third time when Phase 5's Fulfillment service introduces new `FulfillmentFailed` publishers.
+
+All 5 roadmap success criteria (SC1-SC5) are verified against current code and passing tests. All 9 phase requirements (CHK-01..05, PAY-01..03, FE-03) are satisfied. The one explicitly-deferred item (WR-03's concurrent-redelivery race protection) is documented as a known follow-up, not silently dropped, and does not block the phase per the requirement's literal wording. Status is `human_needed` rather than `passed` solely because this sandboxed environment cannot exercise the live Docker/ASB stack — the three human-verification items are the same category of live-broker confirmation that could not be completed in any of this phase's three verification passes.
 
 ---
 
-_Verified: 2026-08-12T00:00:00Z_
+_Verified: 2026-08-13T23:15:00Z_
 _Verifier: Claude (gsd-verifier)_
