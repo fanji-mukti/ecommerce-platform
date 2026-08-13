@@ -1,0 +1,56 @@
+<div class="checkout-page">
+  <h1>Checkout</h1>
+
+  @if (isLoading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  @if (hasError()) {
+    <div class="error-state">
+      <h2>Unable to load checkout status</h2>
+      <p>Something went wrong while checking your order. Please refresh the page or try again.</p>
+      <button mat-raised-button color="primary" (click)="retry()">Retry</button>
+    </div>
+  }
+
+  @if (!hasError() && !isLoading() && cart(); as c) {
+    <mat-stepper [selectedIndex]="currentStepIndex()" linear="false">
+      <mat-step label="Started"></mat-step>
+      <mat-step label="Awaiting Payment"></mat-step>
+      <mat-step label="Paid"></mat-step>
+    </mat-stepper>
+
+    <div class="order-summary">
+      <mat-card>
+        <mat-card-content>
+          <h2>Order Summary</h2>
+          <p class="summary-total">
+            <span>Total</span>
+            <span>{{ c.grandTotal | currency: 'USD' }}</span>
+          </p>
+
+          <p class="hint-text">Tip: cart totals ending in .99 simulate a payment failure.</p>
+
+          <mat-checkbox
+            [checked]="simulatePaymentFailure()"
+            (change)="onCheckboxChange($event)"
+          >
+            Simulate payment failure
+          </mat-checkbox>
+
+          <button
+            mat-raised-button
+            color="primary"
+            [disabled]="isPlacingOrder()"
+            (click)="onPlaceOrder()"
+          >
+            @if (isPlacingOrder()) {
+              <mat-spinner diameter="18"></mat-spinner>
+            }
+            Place Order
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

@@ -1,0 +1,32 @@
+<mat-card appearance="outlined" [style.opacity]="isOutOfStock() ? '0.7' : '1'">
+  @if (product().imageUrl) {
+    <img mat-card-image [src]="product().imageUrl" [alt]="'Photo of ' + product().name" />
+  } @else {
+    <div
+      mat-card-image
+      style="height: 150px; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center;"
+      aria-hidden="true"
+    ></div>
+  }
+
+  <mat-card-content>
+    <h3>{{ product().name }}</h3>
+    <p class="price">{{ product().price | currency: 'USD' }}</p>
+    <mat-chip-set>
+      <mat-chip [color]="stockColor() || null" [disabled]="isOutOfStock()">
+        {{ stockLabel() }}
+      </mat-chip>
+    </mat-chip-set>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button
+      mat-raised-button
+      color="accent"
+      [routerLink]="['/product', product().id]"
+      [disabled]="isOutOfStock()"
+    >
+      View Details
+    </button>
+  </mat-card-actions>
+</mat-card>
