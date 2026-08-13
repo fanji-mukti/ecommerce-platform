@@ -159,6 +159,12 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             // fault; the saga instance already exists and was already initialised from the
             // first delivery.
             Ignore(OrderCreatedEvent),
+            // 04-VERIFICATION (3rd pass): FulfillmentFailed cannot currently reach a Pending
+            // saga (the only publisher is gated behind a Paid-only read-model check), but every
+            // other During() block absorbs all six registered event types defensively — this
+            // one didn't, which is exactly the reachability-assumption gap that let CR-01/CR-02
+            // slip through two prior review passes. Absorb here too, for the same reason.
+            Ignore(FulfillmentFailedEvent),
             // 04-07-REVIEW WR-02: previously a bare When(OrderStatusChangedEvent) with no
             // activity chain. Switched to Ignore(...) for consistency with every other
             // trailing catch-all in this file (Paid/Cancelled/Fulfilled/Failed all use

@@ -1,3 +1,4 @@
+using ECommerce.Fulfillment.Events.V1;
 using ECommerce.Payments.Commands.V1;
 using ECommerce.Payments.Events.V1;
 using Xunit;
@@ -165,6 +166,23 @@ public class OrderStateMachineTests : IAsyncLifetime
 
         await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
         await _steps.Then_NoFaultPublished<ECommerce.Orders.Events.V1.OrderCreated>();
+    }
+
+    [Fact]
+    public async Task FulfillmentFailed_WhenPending_IsAbsorbedWithoutFault()
+    {
+        var orderId = Guid.NewGuid();
+
+        await _steps.Given_OrderCreatedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+
+        // 04-VERIFICATION (3rd pass): FulfillmentFailedEvent was unbound in During(Pending, ...)
+        // — every other During() block absorbed all six registered event types, this one
+        // didn't. Not reachable via any current publisher, but must not fault if it ever is.
+        await _steps.When_FulfillmentFailedPublished(orderId, reason: "Warehouse out of stock");
+
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+        await _steps.Then_NoFaultPublished<FulfillmentFailed>();
     }
 
     [Fact]
