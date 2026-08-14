@@ -95,6 +95,16 @@ None - no external service configuration required.
 - Once 05-03 (Orders saga) and 05-04 (Fulfillment service) land server-side, `/orders/:id` will automatically reflect `Paid → Fulfilled` transitions live via this polling loop with zero additional frontend work
 - No blockers
 
+## Self-Check: PASSED
+
+- FOUND: `src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.ts`
+- FOUND: `src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.html`
+- FOUND: `src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.scss`
+- FOUND: `.planning/phases/05-fulfillment-notifications/05-02-SUMMARY.md`
+- FOUND commit: `ed1e623` (test)
+- FOUND commit: `f5a1ad5` (feat)
+- FOUND commit: `9cfc340` (docs: SUMMARY.md)
+
 ---
 *Phase: 05-fulfillment-notifications*
 *Completed: 2026-08-14*
