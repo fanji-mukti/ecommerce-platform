@@ -157,9 +157,8 @@ describe('OrderDetailComponent', () => {
     expect(compiled.querySelector('.shipping-indicator-text')?.textContent?.trim()).toBe(
       'Preparing your shipment…',
     );
-
-    // Drain the polling loop's pending request so httpMock.verify() in afterEach doesn't fail.
-    httpMock.expectOne('/api/orders/o1').flush(paidOrder);
+    // No fake timers in this test — interval(1500) has not ticked yet, so no second
+    // request is pending; httpMock.verify() in afterEach confirms exactly one request fired.
   });
 
   it('does not show the shipping indicator for a cancelled order', async () => {
