@@ -49,7 +49,7 @@
 ### Fulfillment
 
 - [ ] **FUL-01**: Fulfillment service consumes OrderPaid events and starts processing
-- [ ] **FUL-02**: Fulfillment publishes OrderShipped after timer-based processing simulation
+- [x] **FUL-02**: Fulfillment publishes OrderShipped after timer-based processing simulation
 
 ### Notifications
 
@@ -183,7 +183,7 @@
 | PAY-03 | Phase 4 | Complete |
 | FE-03 | Phase 4 | Complete |
 | FUL-01 | Phase 5 | Pending |
-| FUL-02 | Phase 5 | Pending |
+| FUL-02 | Phase 5 | Complete |
 | NOT-01 | Phase 5 | Pending |
 | NOT-02 | Phase 5 | Pending |
 | IAC-01 | Phase 6 | Pending |

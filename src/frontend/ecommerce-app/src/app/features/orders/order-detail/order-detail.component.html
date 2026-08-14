@@ -28,6 +28,13 @@
         <p class="failure-reason">{{ o.failureReason }}</p>
       }
 
+      @if (isShipping()) {
+        <div class="shipping-indicator">
+          <mat-spinner diameter="18"></mat-spinner>
+          <span class="shipping-indicator-text">Preparing your shipment…</span>
+        </div>
+      }
+
       <mat-card>
         <mat-card-content>
           <h2>Order Summary</h2>
