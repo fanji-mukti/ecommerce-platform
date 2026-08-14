@@ -1,15 +1,13 @@
 using ECommerce.Contracts;
 
-namespace ECommerce.Payments.Events.V1;
+namespace ECommerce.Fulfillment.Events.V1;
 
-public record PaymentFailed(
+public record OrderShipped(
     Guid MessageId,
     Guid CorrelationId,
     Guid CausationId,
     DateTimeOffset OccurredAt,
     Guid CheckoutId,
     string UserId,
-    decimal Amount,
-    string Reason,
-    DateTimeOffset FailedAt
+    DateTimeOffset ShippedAt
 ) : IMessageEnvelope;
