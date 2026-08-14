@@ -1,3 +1,4 @@
+using ECommerce.Fulfillment.API.Data;
 using Serilog;
 using Serilog.Events;
 using OpenTelemetry.Trace;
@@ -18,6 +19,11 @@ try
 
     builder.Services.AddOpenApi();
     builder.Services.AddHealthChecks();
+
+    // TEMPORARY: minimal DbContext registration so `dotnet ef migrations add` can resolve
+    // FulfillmentDbContext for the initial migration. Replaced by the full MassTransit/consumer
+    // build-out in Task 2 of this plan.
+    builder.AddNpgsqlDbContext<FulfillmentDbContext>("postgres");
 
     builder.Services.AddOpenTelemetry()
         .WithTracing(tracing => tracing
