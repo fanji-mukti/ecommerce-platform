@@ -1,0 +1,58 @@
+.order-detail-page {
+  padding: var(--space-xl);
+  max-width: 640px;
+  margin: 0 auto;
+
+  h1 {
+    margin-bottom: var(--space-lg);
+  }
+
+  .not-found-state {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+
+    h1 {
+      margin-bottom: var(--space-md);
+    }
+
+    p {
+      margin-bottom: var(--space-lg);
+    }
+  }
+
+  .status-badge {
+    margin-bottom: var(--space-md);
+  }
+
+  .failure-reason {
+    font-size: 16px;
+    color: #d32f2f;
+    margin-bottom: var(--space-lg);
+  }
+
+  mat-card {
+    margin-bottom: var(--space-lg);
+
+    h2 {
+      margin-bottom: var(--space-md);
+    }
+
+    .line-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-sm);
+    }
+
+    .grand-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 28px;
+      font-weight: 500;
+      margin-top: var(--space-md);
+    }
+  }
+
+  @media (max-width: 600px) {
+    padding: var(--space-md);
+  }
+}

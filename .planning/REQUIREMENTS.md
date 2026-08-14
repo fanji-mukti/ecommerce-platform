@@ -34,17 +34,17 @@
 
 ### Checkout & Saga
 
-- [ ] **CHK-01**: User can initiate checkout and receive a checkoutId (202 Accepted)
-- [ ] **CHK-02**: User can poll checkout / order status via GET /checkout/{id}
-- [ ] **CHK-03**: Saga compensates on PaymentFailed — cancels the order
-- [ ] **CHK-04**: Saga compensates on FulfillmentFailed — refunds payment and cancels order
-- [ ] **CHK-05**: Saga times out after ~15 minutes if not completed (compensation triggered)
+- [x] **CHK-01**: User can initiate checkout and receive a checkoutId (202 Accepted)
+- [x] **CHK-02**: User can poll checkout / order status via GET /checkout/{id}
+- [x] **CHK-03**: Saga compensates on PaymentFailed — cancels the order
+- [x] **CHK-04**: Saga compensates on FulfillmentFailed — refunds payment and cancels order
+- [x] **CHK-05**: Saga times out after ~15 minutes if not completed (compensation triggered)
 
 ### Payments
 
-- [ ] **PAY-01**: Simulated payment service processes AuthorisePayment commands
-- [ ] **PAY-02**: Amounts ending in `.99` deterministically trigger PaymentFailed (demo trigger)
-- [ ] **PAY-03**: Payment processing is idempotent by checkoutId
+- [x] **PAY-01**: Simulated payment service processes AuthorisePayment commands
+- [x] **PAY-02**: Amounts ending in `.99` deterministically trigger PaymentFailed (demo trigger)
+- [x] **PAY-03**: Payment processing is idempotent by checkoutId
 
 ### Fulfillment
 
@@ -90,7 +90,7 @@
 
 - [x] **FE-01**: User can browse the product catalog and view product detail (/catalog, /product/:id)
 - [x] **FE-02**: User can manage their cart (/cart)
-- [ ] **FE-03**: User can complete checkout and see order status updating in real-time via polling (/checkout, /orders/:id)
+- [x] **FE-03**: User can complete checkout and see order status updating in real-time via polling (/checkout, /orders/:id)
 - [x] **FE-04**: User can register and log in (/register, /login)
 
 ---
@@ -173,15 +173,15 @@
 | ORD-03 | Phase 3 | Pending |
 | ORD-04 | Phase 3 | Complete |
 | FE-02 | Phase 3 | Complete |
-| CHK-01 | Phase 4 | Pending |
-| CHK-02 | Phase 4 | Pending |
-| CHK-03 | Phase 4 | Pending |
-| CHK-04 | Phase 4 | Pending |
-| CHK-05 | Phase 4 | Pending |
-| PAY-01 | Phase 4 | Pending |
-| PAY-02 | Phase 4 | Pending |
-| PAY-03 | Phase 4 | Pending |
-| FE-03 | Phase 4 | Pending |
+| CHK-01 | Phase 4 | Complete |
+| CHK-02 | Phase 4 | Complete |
+| CHK-03 | Phase 4 | Complete |
+| CHK-04 | Phase 4 | Complete |
+| CHK-05 | Phase 4 | Complete |
+| PAY-01 | Phase 4 | Complete |
+| PAY-02 | Phase 4 | Complete |
+| PAY-03 | Phase 4 | Complete |
+| FE-03 | Phase 4 | Complete |
 | FUL-01 | Phase 5 | Pending |
 | FUL-02 | Phase 5 | Pending |
 | NOT-01 | Phase 5 | Pending |

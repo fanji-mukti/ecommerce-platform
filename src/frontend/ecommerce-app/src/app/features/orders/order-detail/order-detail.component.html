@@ -1,0 +1,52 @@
+<div class="order-detail-page">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <mat-icon aria-hidden="true">hourglass_empty</mat-icon>
+    </div>
+  }
+
+  @if (notFound() && !isLoading()) {
+    <div class="not-found-state">
+      <h1>Order not found</h1>
+      <p>This order doesn't exist or may have been removed.</p>
+      <a mat-button routerLink="/catalog">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Catalog
+      </a>
+    </div>
+  }
+
+  @if (order(); as o) {
+    <div class="order-layout">
+      <h1>Order Status</h1>
+
+      <mat-chip-set class="status-badge">
+        <mat-chip [color]="statusColor()" [highlighted]="true">{{ o.status }}</mat-chip>
+      </mat-chip-set>
+
+      @if (showFailureReason()) {
+        <p class="failure-reason">{{ o.failureReason }}</p>
+      }
+
+      <mat-card>
+        <mat-card-content>
+          <h2>Order Summary</h2>
+
+          @for (item of o.lineItems; track item.productId) {
+            <div class="line-item">
+              <span class="line-item-name">{{ item.productName }} x{{ item.quantity }}</span>
+              <span class="line-item-total">{{ item.unitPrice * item.quantity | currency: 'USD' }}</span>
+            </div>
+          }
+
+          <p class="grand-total">
+            <span>Total</span>
+            <span>{{ o.totalAmount | currency: 'USD' }}</span>
+          </p>
+        </mat-card-content>
+      </mat-card>
+
+      <a mat-raised-button color="primary" routerLink="/catalog">Back to Catalog</a>
+    </div>
+  }
+</div>

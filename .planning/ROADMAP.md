@@ -12,7 +12,7 @@
 - [x] **Phase 1: Foundations** — Lock contracts shape, Compose baseline, Aspire AppHost, OpenTelemetry, and first 8 ADRs (completed 2026-06-03)
 - [x] **Phase 2: Identity, Catalog & Gateway** — User can register/login and browse catalog through YARP gateway with outbox/inbox wired from day one (completed 2026-06-17)
 - [ ] **Phase 3: Cart & Orders Skeleton** — Per-user Redis cart and Orders aggregate with CQRS read model and state machine
-- [ ] **Phase 4: Checkout Saga & Payments** — Headline demo: place order triggers saga, deterministic failure shows live compensation
+- [x] **Phase 4: Checkout Saga & Payments** — Headline demo: place order triggers saga, deterministic failure shows live compensation (gap closure in progress — 04-07-PLAN.md addresses 04-VERIFICATION.md's CR-01 blocker + WR-01..04) (completed 2026-08-12)
 - [ ] **Phase 5: Fulfillment & Notifications** — Complete happy-path and compensation flows end-to-end with in-app notification inbox
 - [ ] **Phase 6: Hardening & Azure Deployment** — Terraform-provisioned Azure infrastructure with remote state, dev/prod environments, and production-grade resilience
 
@@ -135,8 +135,30 @@ Plans:
 4. Fulfillment-failure compensation (simulated by a test trigger or seeded condition) causes the saga to publish `RefundPayment` and `CancelOrder`, leaving the system in a consistent terminal state.
 5. A checkout left incomplete for ~15 minutes triggers a saga timeout that cascades the same compensation path as an explicit failure, leaving no orphaned orders or payments.
 
-**Plans:** TBD
+**Plans:** 7/7 plans complete
+Plans:
+
+- [x] 04-01-PLAN.md — Message contracts (StartCheckout, AuthorisePayment/RefundPayment, PaymentAuthorised/PaymentFailed/PaymentRefunded, FulfillmentFailed) + AppHost/Gateway wiring for Checkout/Payments
+- [x] 04-02-PLAN.md — Orders saga: Schedule/Unschedule timeout (CHK-05), typed payment/fulfillment events (CHK-03/CHK-04), ADR-0009, extended unit tests
+- [x] 04-03-PLAN.md — Orders HTTP: POST /orders/checkout (replaces test-create-from-cart), GET /orders/{id} + FailureReason
+- [x] 04-04-PLAN.md — Payments service: PaymentsDbContext, AuthorisePaymentConsumer/RefundPaymentConsumer, idempotency (PAY-01/02/03)
+- [x] 04-05-PLAN.md — Checkout.API façade: POST /checkout, GET /checkout/{id}, demo fulfillment-failure trigger (CHK-01/02/04)
+- [x] 04-06-PLAN.md — Angular /checkout + /orders/:id pages: stepper, polling, hint text, demo toggle (FE-03)
+- [x] 04-07-PLAN.md — Gap closure: widen OrderStateMachine's During(Cancelled, ...) catch-all (CR-01 blocker), propagate FulfillmentFailed.Reason (WR-01), Payments idempotency hardening (WR-02/WR-03), checkout-page polling teardown + resumable retry (WR-04)
+
+**Wave 1** *(parallel)*: 04-01
+**Wave 2** *(blocked on Wave 1)*: 04-02, 04-04 (parallel — no file overlap)
+**Wave 3** *(blocked on Wave 2)*: 04-03 (depends on 04-02)
+**Wave 4** *(blocked on Wave 3)*: 04-05 (depends on 04-01, 04-03)
+**Wave 5** *(blocked on Wave 4)*: 04-06 (depends on 04-05)
+**Gap closure** *(addresses 04-VERIFICATION.md CR-01 + 04-REVIEW.md WR-01..04, no dependency on Wave 1-5 plans beyond files already merged)*: 04-07
 **UI hint:** yes
+
+**Cross-cutting constraints:**
+
+- No new persisted saga state added for "Started" — Checkout.API synthesizes it from a 404, per ADR-0009 (see 04-02/04-05)
+- `MassTransit.Quartz` pinned exactly to `8.3.6`, gated by a blocking human-verify checkpoint before install (plan 04-02)
+- `checkoutId == orderId` — a single correlation id end-to-end, minted by Checkout.API
 
 ### Phase 5: Fulfillment & Notifications
 
@@ -179,7 +201,7 @@ Plans:
 | 1. Foundations | 5/5 | Complete    | 2026-06-11 |
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
-| 4. Checkout Saga & Payments | 0/? | Not started | - |
+| 4. Checkout Saga & Payments | 7/7 | Complete   | 2026-08-12 |
 | 5. Fulfillment & Notifications | 0/? | Not started | - |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
@@ -199,3 +221,5 @@ Every v1 requirement maps to exactly one phase. See `REQUIREMENTS.md` ## Traceab
 *Phase 1 planned: 2026-06-03*
 *Phase 2 planned: 2026-06-17*
 *Phase 3 planned: 2026-07-22*
+*Phase 4 planned: 2026-08-08*
+*Phase 4 gap closure planned: 2026-08-12*
