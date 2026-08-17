@@ -85,7 +85,7 @@ public class OrderStateMachineSteps : IAsyncLifetime
             .Should().BeTrue("the saga should have consumed the OrderCreated event before proceeding");
     }
 
-    public async Task When_OrderStatusChangedPublished(Guid orderId, string previousStatus, string newStatus)
+    public async Task When_OrderStatusChangedPublished(Guid orderId, string previousStatus, string newStatus, string userId = "user-1")
     {
         await _harness!.Bus.Publish(new OrderStatusChanged(
             MessageId: Guid.NewGuid(),
@@ -93,6 +93,7 @@ public class OrderStateMachineSteps : IAsyncLifetime
             CausationId: Guid.Empty,
             OccurredAt: DateTimeOffset.UtcNow,
             OrderId: orderId,
+            UserId: userId,
             PreviousStatus: previousStatus,
             NewStatus: newStatus,
             ChangedAt: DateTimeOffset.UtcNow));
@@ -116,7 +117,7 @@ public class OrderStateMachineSteps : IAsyncLifetime
             .Should().BeTrue("the saga should have consumed the PaymentAuthorised event before proceeding");
     }
 
-    public async Task Given_PaymentFailedPublished(Guid orderId, string reason)
+    public async Task Given_PaymentFailedPublished(Guid orderId, string reason, string userId = "user-1")
     {
         await _harness!.Bus.Publish(new PaymentFailed(
             MessageId: Guid.NewGuid(),
@@ -124,6 +125,7 @@ public class OrderStateMachineSteps : IAsyncLifetime
             CausationId: Guid.Empty,
             OccurredAt: DateTimeOffset.UtcNow,
             CheckoutId: orderId,
+            UserId: userId,
             Amount: 39.98m,
             Reason: reason,
             FailedAt: DateTimeOffset.UtcNow));
@@ -145,6 +147,21 @@ public class OrderStateMachineSteps : IAsyncLifetime
 
         (await _harness!.Consumed.Any<FulfillmentFailed>(x => x.Context.Message.CheckoutId == orderId))
             .Should().BeTrue("the saga should have consumed the FulfillmentFailed event before proceeding");
+    }
+
+    public async Task When_OrderShippedPublished(Guid orderId, string userId = "user-1")
+    {
+        await _harness!.Bus.Publish(new OrderShipped(
+            MessageId: Guid.NewGuid(),
+            CorrelationId: orderId,
+            CausationId: Guid.Empty,
+            OccurredAt: DateTimeOffset.UtcNow,
+            CheckoutId: orderId,
+            UserId: userId,
+            ShippedAt: DateTimeOffset.UtcNow));
+
+        (await _harness!.Consumed.Any<OrderShipped>(x => x.Context.Message.CheckoutId == orderId))
+            .Should().BeTrue("the saga should have consumed the OrderShipped event before proceeding");
     }
 
     public async Task When_CheckoutTimeoutExpires(Guid orderId)

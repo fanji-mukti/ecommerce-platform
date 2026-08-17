@@ -33,7 +33,7 @@ public class AuthorisePaymentConsumer(PaymentsDbContext db, IPublishEndpoint pub
                 case "Failed":
                     await publish.Publish(new PaymentFailed(
                         Guid.NewGuid(), msg.CheckoutId, msg.MessageId, now,
-                        msg.CheckoutId, existing.Amount, existing.FailureReason!, existing.ProcessedAt), context.CancellationToken);
+                        msg.CheckoutId, msg.UserId, existing.Amount, existing.FailureReason!, existing.ProcessedAt), context.CancellationToken);
                     break;
                 case "Refunded":
                     // A redelivered AuthorisePayment for an already-refunded payment must not
@@ -69,7 +69,7 @@ public class AuthorisePaymentConsumer(PaymentsDbContext db, IPublishEndpoint pub
 
             await publish.Publish(new PaymentFailed(
                 Guid.NewGuid(), msg.CheckoutId, msg.MessageId, now,
-                msg.CheckoutId, msg.Amount, DeclinedReason, now), context.CancellationToken);
+                msg.CheckoutId, msg.UserId, msg.Amount, DeclinedReason, now), context.CancellationToken);
         }
         else
         {

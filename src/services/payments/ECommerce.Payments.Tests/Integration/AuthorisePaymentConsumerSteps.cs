@@ -86,7 +86,7 @@ public class AuthorisePaymentConsumerSteps : IAsyncLifetime
         await db.SaveChangesAsync();
     }
 
-    public async Task When_AuthorisePaymentPublished(Guid checkoutId, decimal amount, bool simulateFail = false)
+    public async Task When_AuthorisePaymentPublished(Guid checkoutId, decimal amount, bool simulateFail = false, string userId = "user-1")
     {
         var message = new AuthorisePayment(
             MessageId: Guid.NewGuid(),
@@ -94,6 +94,7 @@ public class AuthorisePaymentConsumerSteps : IAsyncLifetime
             CausationId: Guid.Empty,
             OccurredAt: DateTimeOffset.UtcNow,
             CheckoutId: checkoutId,
+            UserId: userId,
             Amount: amount,
             SimulatePaymentFailure: simulateFail);
 
@@ -102,7 +103,7 @@ public class AuthorisePaymentConsumerSteps : IAsyncLifetime
         await _harness!.InactivityTask;
     }
 
-    public async Task When_AuthorisePaymentPublishedTwice(Guid checkoutId, decimal amount, bool simulateFail = false)
+    public async Task When_AuthorisePaymentPublishedTwice(Guid checkoutId, decimal amount, bool simulateFail = false, string userId = "user-1")
     {
         var message = new AuthorisePayment(
             MessageId: Guid.NewGuid(),
@@ -110,6 +111,7 @@ public class AuthorisePaymentConsumerSteps : IAsyncLifetime
             CausationId: Guid.Empty,
             OccurredAt: DateTimeOffset.UtcNow,
             CheckoutId: checkoutId,
+            UserId: userId,
             Amount: amount,
             SimulatePaymentFailure: simulateFail);
 
@@ -156,6 +158,12 @@ public class AuthorisePaymentConsumerSteps : IAsyncLifetime
         var payment = await db.ProcessedPayments.FirstOrDefaultAsync(p => p.CheckoutId == checkoutId);
         payment.Should().NotBeNull();
         payment!.Outcome.Should().Be(expectedOutcome);
+    }
+
+    public async Task Then_PublishedPaymentFailedHasUserId(string expectedUserId)
+    {
+        (await _harness!.Published.Any<ECommerce.Payments.Events.V1.PaymentFailed>(ctx => ctx.Context.Message.UserId == expectedUserId))
+            .Should().BeTrue($"a PaymentFailed message with UserId '{expectedUserId}' should have been published");
     }
 
     public async Task<int> Then_PublishedCount<T>()
