@@ -174,14 +174,14 @@ Plans:
 3. User can GET `/notifications` to view an in-app inbox containing entries for the saga lifecycle events they participated in (`OrderPaid`, `OrderShipped`, `PaymentFailed`).
 4. Notifications service idempotently consumes saga events from the producing-context topics and persists inbox entries, verified by a forced-redelivery test producing no duplicate inbox rows.
 
-**Plans:** 2/8 plans executed
+**Plans:** 5/8 plans executed
 Plans:
 
 - [x] 05-01-PLAN.md — Contracts: new OrderShipped event + UserId (D-03) added to OrderStatusChanged/PaymentFailed/AuthorisePayment
 - [x] 05-02-PLAN.md — Angular /orders/:id: "Preparing your shipment…" indicator (D-07) + net-new live polling (D-08)
-- [ ] 05-03-PLAN.md — Orders saga wires OrderShipped (Paid→Fulfilled) + UserId propagated through Orders/Payments publish sites
-- [ ] 05-04-PLAN.md — Fulfillment service build-out: DbContext/Options/consumer/Program.cs (FUL-01/FUL-02) + AppHost postgres-reference fix
-- [ ] 05-05-PLAN.md — Notifications backend: NotificationEntry entity, 3 consumers, JWT-scoped GET /notifications (NOT-01/NOT-02)
+- [x] 05-03-PLAN.md — Orders saga wires OrderShipped (Paid→Fulfilled) + UserId propagated through Orders/Payments publish sites
+- [x] 05-04-PLAN.md — Fulfillment service build-out: DbContext/Options/consumer/Program.cs (FUL-01/FUL-02) + AppHost postgres-reference fix
+- [x] 05-05-PLAN.md — Notifications backend: NotificationEntry entity, 3 consumers, JWT-scoped GET /notifications (NOT-01/NOT-02)
 - [ ] 05-06-PLAN.md — Fulfillment.Tests: new test project, consumer scheduling test, forced-redelivery inbox dedup test
 - [ ] 05-07-PLAN.md — Notifications.Tests: endpoint IDOR test, 3 consumer tests, forced-redelivery inbox dedup test
 - [ ] 05-08-PLAN.md — Angular /notifications page: mat-list inbox, nav link (D-05/D-06)
@@ -225,7 +225,7 @@ Plans:
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
 | 4. Checkout Saga & Payments | 7/7 | Complete   | 2026-08-12 |
-| 5. Fulfillment & Notifications | 2/8 | In Progress|  |
+| 5. Fulfillment & Notifications | 5/8 | In Progress|  |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
 ---
