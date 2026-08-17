@@ -24,6 +24,17 @@ public class AuthorisePaymentConsumerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task AuthorisePayment_WhenAmountEndsIn99_PublishedPaymentFailedCarriesUserId()
+    {
+        await _steps.Given_HarnessWithPostgresOutbox();
+
+        var checkoutId = Guid.NewGuid();
+        await _steps.When_AuthorisePaymentPublished(checkoutId, amount: 19.99m, userId: "user-42");
+
+        await _steps.Then_PublishedPaymentFailedHasUserId("user-42");
+    }
+
+    [Fact]
     public async Task AuthorisePayment_WhenSimulatePaymentFailureTrue_OutcomeIsFailedRegardlessOfAmount()
     {
         await _steps.Given_HarnessWithPostgresOutbox();
