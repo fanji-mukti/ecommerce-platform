@@ -7,6 +7,7 @@ import { RegisterComponent } from './features/auth/register/register.component';
 import { CallbackComponent } from './features/auth/callback/callback.component';
 import { CheckoutPageComponent } from './features/checkout/checkout-page/checkout-page.component';
 import { OrderDetailComponent } from './features/orders/order-detail/order-detail.component';
+import { NotificationsPageComponent } from './features/notifications/notifications-page/notifications-page.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'catalog', pathMatch: 'full' },
@@ -15,6 +16,7 @@ export const routes: Routes = [
   { path: 'cart', component: CartPageComponent, title: 'Cart — eCommerce' },
   { path: 'checkout', component: CheckoutPageComponent, title: 'Checkout — eCommerce' },
   { path: 'orders/:id', component: OrderDetailComponent, title: 'Order — eCommerce' },
+  { path: 'notifications', component: NotificationsPageComponent, title: 'Notifications — eCommerce' },
   { path: 'login', component: LoginComponent, title: 'Sign In — eCommerce' },
   { path: 'register', component: RegisterComponent, title: 'Create Account — eCommerce' },
   { path: 'callback', component: CallbackComponent, title: 'eCommerce' },
