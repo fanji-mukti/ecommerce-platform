@@ -13,7 +13,7 @@
 - [x] **Phase 2: Identity, Catalog & Gateway** — User can register/login and browse catalog through YARP gateway with outbox/inbox wired from day one (completed 2026-06-17)
 - [ ] **Phase 3: Cart & Orders Skeleton** — Per-user Redis cart and Orders aggregate with CQRS read model and state machine
 - [x] **Phase 4: Checkout Saga & Payments** — Headline demo: place order triggers saga, deterministic failure shows live compensation (gap closure in progress — 04-07-PLAN.md addresses 04-VERIFICATION.md's CR-01 blocker + WR-01..04) (completed 2026-08-12)
-- [ ] **Phase 5: Fulfillment & Notifications** — Complete happy-path and compensation flows end-to-end with in-app notification inbox
+- [x] **Phase 5: Fulfillment & Notifications** — Complete happy-path and compensation flows end-to-end with in-app notification inbox (completed 2026-08-19)
 - [ ] **Phase 6: Hardening & Azure Deployment** — Terraform-provisioned Azure infrastructure with remote state, dev/prod environments, and production-grade resilience
 
 ---
@@ -174,7 +174,7 @@ Plans:
 3. User can GET `/notifications` to view an in-app inbox containing entries for the saga lifecycle events they participated in (`OrderPaid`, `OrderShipped`, `PaymentFailed`).
 4. Notifications service idempotently consumes saga events from the producing-context topics and persists inbox entries, verified by a forced-redelivery test producing no duplicate inbox rows.
 
-**Plans:** 5/8 plans executed
+**Plans:** 8/8 plans complete
 Plans:
 
 - [x] 05-01-PLAN.md — Contracts: new OrderShipped event + UserId (D-03) added to OrderStatusChanged/PaymentFailed/AuthorisePayment
@@ -182,9 +182,9 @@ Plans:
 - [x] 05-03-PLAN.md — Orders saga wires OrderShipped (Paid→Fulfilled) + UserId propagated through Orders/Payments publish sites
 - [x] 05-04-PLAN.md — Fulfillment service build-out: DbContext/Options/consumer/Program.cs (FUL-01/FUL-02) + AppHost postgres-reference fix
 - [x] 05-05-PLAN.md — Notifications backend: NotificationEntry entity, 3 consumers, JWT-scoped GET /notifications (NOT-01/NOT-02)
-- [ ] 05-06-PLAN.md — Fulfillment.Tests: new test project, consumer scheduling test, forced-redelivery inbox dedup test
-- [ ] 05-07-PLAN.md — Notifications.Tests: endpoint IDOR test, 3 consumer tests, forced-redelivery inbox dedup test
-- [ ] 05-08-PLAN.md — Angular /notifications page: mat-list inbox, nav link (D-05/D-06)
+- [x] 05-06-PLAN.md — Fulfillment.Tests: new test project, consumer scheduling test, forced-redelivery inbox dedup test
+- [x] 05-07-PLAN.md — Notifications.Tests: endpoint IDOR test, 3 consumer tests, forced-redelivery inbox dedup test
+- [x] 05-08-PLAN.md — Angular /notifications page: mat-list inbox, nav link (D-05/D-06)
 
 **UI hint:** yes (added retroactively per 05-CONTEXT.md D-05 — ROADMAP originally did not flag this phase for UI work)
 
@@ -225,7 +225,7 @@ Plans:
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
 | 4. Checkout Saga & Payments | 7/7 | Complete   | 2026-08-12 |
-| 5. Fulfillment & Notifications | 5/8 | In Progress|  |
+| 5. Fulfillment & Notifications | 8/8 | Complete   | 2026-08-19 |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
 ---
