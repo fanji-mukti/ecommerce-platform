@@ -1,0 +1,36 @@
+<div class="notifications-page">
+  <h1>Notifications</h1>
+
+  @if (isLoading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  @if (hasError()) {
+    <div class="error-state">
+      <h2>Failed to load notifications</h2>
+      <p>Something went wrong while loading your notifications. Please refresh the page or try again.</p>
+      <button mat-raised-button color="primary" (click)="retry()">Retry</button>
+    </div>
+  }
+
+  @if (!hasError() && !isLoading()) {
+    @if (notifications().length === 0) {
+      <div class="empty-state">
+        <h2>No notifications yet</h2>
+        <p>Updates about your orders will show up here.</p>
+      </div>
+    } @else {
+      <mat-list>
+        @for (n of notifications(); track n.id) {
+          <a mat-list-item [routerLink]="['/orders', n.orderId]">
+            <mat-icon matListItemIcon [class.destructive-icon]="isDestructive(n.eventType)">{{
+              iconFor(n.eventType)
+            }}</mat-icon>
+            <span matListItemTitle>{{ n.message }}</span>
+            <span matListItemLine>{{ n.occurredAt | date }}</span>
+          </a>
+        }
+      </mat-list>
+    }
+  }
+</div>
