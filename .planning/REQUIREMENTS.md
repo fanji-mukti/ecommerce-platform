@@ -54,7 +54,7 @@
 ### Notifications
 
 - [x] **NOT-01**: User can view their in-app notification inbox (GET /notifications)
-- [ ] **NOT-02**: Notifications service consumes saga events (OrderPaid, OrderShipped, PaymentFailed) and persists inbox entries
+- [x] **NOT-02**: Notifications service consumes saga events (OrderPaid, OrderShipped, PaymentFailed) and persists inbox entries
 
 ### Contracts
 
@@ -185,7 +185,7 @@
 | FUL-01 | Phase 5 | Complete |
 | FUL-02 | Phase 5 | Complete |
 | NOT-01 | Phase 5 | Complete |
-| NOT-02 | Phase 5 | Pending |
+| NOT-02 | Phase 5 | Complete |
 | IAC-01 | Phase 6 | Pending |
 | IAC-02 | Phase 6 | Pending |
 | IAC-03 | Phase 6 | Pending |
