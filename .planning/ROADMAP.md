@@ -174,7 +174,7 @@ Plans:
 3. User can GET `/notifications` to view an in-app inbox containing entries for the saga lifecycle events they participated in (`OrderPaid`, `OrderShipped`, `PaymentFailed`).
 4. Notifications service idempotently consumes saga events from the producing-context topics and persists inbox entries, verified by a forced-redelivery test producing no duplicate inbox rows.
 
-**Plans:** 8/11 plans complete (05-09/05-10/05-11 gap closure pending execution)
+**Plans:** 11/11 plans complete
 Plans:
 
 - [x] 05-01-PLAN.md — Contracts: new OrderShipped event + UserId (D-03) added to OrderStatusChanged/PaymentFailed/AuthorisePayment
@@ -185,9 +185,9 @@ Plans:
 - [x] 05-06-PLAN.md — Fulfillment.Tests: new test project, consumer scheduling test, forced-redelivery inbox dedup test
 - [x] 05-07-PLAN.md — Notifications.Tests: endpoint IDOR test, 3 consumer tests, forced-redelivery inbox dedup test
 - [x] 05-08-PLAN.md — Angular /notifications page: mat-list inbox, nav link (D-05/D-06)
-- [ ] 05-09-PLAN.md — Gap closure: OrderStatusSnapshot + suppression fix for false "shipped" notification on cancelled orders (05-VERIFICATION.md CR-01 blocker)
-- [ ] 05-10-PLAN.md — Gap closure: forced-redelivery inbox-dedup tests for OrderShippedNotificationConsumer + PaymentFailedNotificationConsumer (05-REVIEW.md WR-02)
-- [ ] 05-11-PLAN.md — Gap closure: order-detail polling catchError recovery (05-REVIEW.md WR-03)
+- [x] 05-09-PLAN.md — Gap closure: OrderStatusSnapshot + suppression fix for false "shipped" notification on cancelled orders (05-VERIFICATION.md CR-01 blocker)
+- [x] 05-10-PLAN.md — Gap closure: forced-redelivery inbox-dedup tests for OrderShippedNotificationConsumer + PaymentFailedNotificationConsumer (05-REVIEW.md WR-02)
+- [x] 05-11-PLAN.md — Gap closure: order-detail polling catchError recovery (05-REVIEW.md WR-03)
 
 **UI hint:** yes (added retroactively per 05-CONTEXT.md D-05 — ROADMAP originally did not flag this phase for UI work)
 
@@ -229,7 +229,7 @@ Plans:
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
 | 4. Checkout Saga & Payments | 7/7 | Complete   | 2026-08-12 |
-| 5. Fulfillment & Notifications | 8/8 | Complete   | 2026-08-19 |
+| 5. Fulfillment & Notifications | 11/11 | Complete   | 2026-08-20 |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
 ---
