@@ -7,8 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { interval } from 'rxjs';
-import { switchMap, takeWhile } from 'rxjs/operators';
+import { EMPTY, interval } from 'rxjs';
+import { catchError, switchMap, takeWhile } from 'rxjs/operators';
 import { OrderDetail } from '../../../shared/models/order.model';
 import { OrdersService } from '../../../core/services/orders.service';
 
@@ -73,7 +73,7 @@ export class OrderDetailComponent implements OnInit {
   private startPolling(id: string): void {
     interval(1500)
       .pipe(
-        switchMap(() => this.ordersService.getOrder(id)),
+        switchMap(() => this.ordersService.getOrder(id).pipe(catchError(() => EMPTY))),
         takeWhile((order) => {
           this.order.set(order);
           return !ORDER_DETAIL_TERMINAL_STATUSES.includes(order.status);
