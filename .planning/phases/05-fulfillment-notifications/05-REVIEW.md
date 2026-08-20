@@ -1,328 +1,184 @@
 ---
 phase: 05-fulfillment-notifications
-reviewed: 2026-08-19T00:00:00Z
+reviewed: 2026-08-21T00:00:00Z
 depth: standard
-files_reviewed: 56
+files_reviewed: 17
 files_reviewed_list:
-  - src/building-blocks/Contracts/Fulfillment/Events/V1/OrderShipped.cs
-  - src/building-blocks/Contracts/Orders/Events/V1/OrderStatusChanged.cs
-  - src/building-blocks/Contracts/Payments/Commands/V1/AuthorisePayment.cs
-  - src/building-blocks/Contracts/Payments/Events/V1/PaymentFailed.cs
-  - src/ecommerce.AppHost/Program.cs
-  - src/frontend/ecommerce-app/src/app/app.html
-  - src/frontend/ecommerce-app/src/app/app.routes.ts
-  - src/frontend/ecommerce-app/src/app/core/services/notifications.service.ts
-  - src/frontend/ecommerce-app/src/app/features/notifications/notifications-page/notifications-page.component.html
-  - src/frontend/ecommerce-app/src/app/features/notifications/notifications-page/notifications-page.component.scss
-  - src/frontend/ecommerce-app/src/app/features/notifications/notifications-page/notifications-page.component.spec.ts
-  - src/frontend/ecommerce-app/src/app/features/notifications/notifications-page/notifications-page.component.ts
-  - src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.html
-  - src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.scss
   - src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.spec.ts
   - src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.ts
-  - src/frontend/ecommerce-app/src/app/shared/models/notification.model.ts
-  - src/services/fulfillment/ECommerce.Fulfillment.API/Data/DbInitializer.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.API/Data/FulfillmentDbContext.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.API/ECommerce.Fulfillment.API.csproj
-  - src/services/fulfillment/ECommerce.Fulfillment.API/Features/Fulfillment/FulfillmentOptions.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.API/Features/Fulfillment/OrderPaidConsumer.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.API/Migrations/20260814150228_InitialFulfillmentSchema.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.API/Program.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.Tests/ECommerce.Fulfillment.Tests.csproj
-  - src/services/fulfillment/ECommerce.Fulfillment.Tests/Integration/OrderPaidConsumerSteps.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.Tests/Integration/OrderPaidConsumerTests.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.Tests/Integration/OrderPaidInboxDeduplicationSteps.cs
-  - src/services/fulfillment/ECommerce.Fulfillment.Tests/Integration/OrderPaidInboxDeduplicationTests.cs
-  - src/services/fulfillment/Fulfillment.sln
-  - src/services/notifications/ECommerce.Notifications.API/Consumers/OrderPaidNotificationConsumer.cs
   - src/services/notifications/ECommerce.Notifications.API/Consumers/OrderShippedNotificationConsumer.cs
-  - src/services/notifications/ECommerce.Notifications.API/Consumers/PaymentFailedNotificationConsumer.cs
+  - src/services/notifications/ECommerce.Notifications.API/Consumers/OrderStatusSnapshotConsumer.cs
   - src/services/notifications/ECommerce.Notifications.API/Data/NotificationsDbContext.cs
-  - src/services/notifications/ECommerce.Notifications.API/ECommerce.Notifications.API.csproj
-  - src/services/notifications/ECommerce.Notifications.API/Features/Notifications/NotificationEntry.cs
-  - src/services/notifications/ECommerce.Notifications.API/Features/Notifications/NotificationsEndpoints.cs
-  - src/services/notifications/ECommerce.Notifications.API/Migrations/20260814150207_AddNotificationEntry.cs
+  - src/services/notifications/ECommerce.Notifications.API/Features/Notifications/OrderStatusSnapshot.cs
+  - src/services/notifications/ECommerce.Notifications.API/Migrations/20260820154643_AddOrderStatusSnapshot.cs
+  - src/services/notifications/ECommerce.Notifications.API/Migrations/NotificationsDbContextModelSnapshot.cs
   - src/services/notifications/ECommerce.Notifications.API/Program.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/ECommerce.Notifications.Tests.csproj
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/NotificationsEndpointSteps.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/NotificationsEndpointTests.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderPaidNotificationConsumerSteps.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderPaidNotificationConsumerTests.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderPaidNotificationInboxDeduplicationSteps.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderPaidNotificationInboxDeduplicationTests.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderShippedNotificationConsumerSteps.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderShippedNotificationConsumerTests.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/PaymentFailedNotificationConsumerSteps.cs
-  - src/services/notifications/ECommerce.Notifications.Tests/Integration/PaymentFailedNotificationConsumerTests.cs
-  - src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs
-  - src/services/orders/ECommerce.Orders.Tests/Unit/OrderStateMachineSteps.cs
-  - src/services/orders/ECommerce.Orders.Tests/Unit/OrderStateMachineTests.cs
-  - src/services/payments/ECommerce.Payments.API/Features/Payments/AuthorisePaymentConsumer.cs
-  - src/services/payments/ECommerce.Payments.Tests/Integration/AuthorisePaymentConsumerSteps.cs
-  - src/services/payments/ECommerce.Payments.Tests/Integration/AuthorisePaymentConsumerTests.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderShippedNotificationConsumerSuppressionSteps.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderShippedNotificationConsumerSuppressionTests.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderShippedNotificationInboxDeduplicationSteps.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderShippedNotificationInboxDeduplicationTests.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderStatusSnapshotConsumerSteps.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderStatusSnapshotConsumerTests.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/PaymentFailedNotificationInboxDeduplicationSteps.cs
+  - src/services/notifications/ECommerce.Notifications.Tests/Integration/PaymentFailedNotificationInboxDeduplicationTests.cs
 findings:
-  critical: 1
-  warning: 4
-  info: 4
-  total: 9
+  critical: 0
+  warning: 2
+  info: 2
+  total: 4
 status: issues_found
 ---
 
 # Phase 05: Code Review Report
 
-**Reviewed:** 2026-08-19T00:00:00Z
+**Reviewed:** 2026-08-21T00:00:00Z
 **Depth:** standard
-**Files Reviewed:** 56
+**Files Reviewed:** 17
 **Status:** issues_found
+
+## Scope note
+
+This review covers only the gap-closure delta introduced by plans 05-09, 05-10, and 05-11, which
+close CR-01 (false "shipped" notification for cancelled/refunded orders), WR-02 (asymmetric
+inbox-deduplication test coverage), and WR-03 (order-detail polling stops permanently on a
+transient HTTP error) from the phase's original `05-REVIEW.md` and `05-VERIFICATION.md`. It is
+**not** a full phase re-review. The base 56 files from plans 05-01..05-08 were previously reviewed
+at standard depth in the earlier pass (`05-REVIEW.md`, `files_reviewed: 56`) and found clean aside
+from the findings that these three gap-closure plans were written to address; they are unchanged by
+this delta and are not re-reviewed here. This report **overwrites** the prior `05-REVIEW.md`.
+
+The commit range actually verified for this delta is `f358d18^..495e0a6` (the 05-09/05-10/05-11
+commits merged into `phase05/Fulfillment-Notifications`), confirmed via `git diff --stat` to touch
+exactly the 17 files listed above (18 including the migration's `.Designer.cs`, which is not in the
+reviewed file list but was inspected as a byproduct of the migration).
 
 ## Summary
 
-Phase 05 wires up the Fulfillment and Notifications services and closes the Paid→Fulfilled loop in
-`OrderStateMachine` via the new `OrderShipped` event, plus a `/notifications` read endpoint and Angular
-UI. The MassTransit inbox/outbox wiring, saga catch-all discipline, and payment idempotency work are
-carried through carefully and are well tested for the "happy path" and most redelivery scenarios.
+All three targeted gaps are closed correctly and the fixes are minimal and well-targeted:
 
-The one critical finding is a genuine data-correctness gap introduced by this phase: Fulfillment
-schedules a delayed `OrderShipped` publish the moment an order is Paid, but nothing cancels that
-scheduled message if the order is later cancelled (e.g. via the existing "simulate fulfillment failure"
-demo endpoint). The result is a customer-visible, factually wrong "Your order has shipped" notification
-for an order that was actually cancelled and refunded. This is reachable through an existing,
-authorized demo flow — not a contrived edge case — and should be fixed before this phase ships.
+- **CR-01** is closed by a new `OrderStatusSnapshotConsumer` (locally-owned order-status
+  read-model, avoiding a synchronous call back to Orders) plus a suppression check added to
+  `OrderShippedNotificationConsumer` that skips the "shipped" notification when the last known
+  status is `Cancelled`/`Failed`. The fix matches the shape suggested in the original CR-01 finding
+  and is covered by four new suppression tests plus three snapshot-consumer tests (insert,
+  update-on-newer, and reject-stale-out-of-order).
+- **WR-02** is closed by two new Postgres-backed inbox-deduplication integration tests
+  (`OrderShippedNotificationInboxDeduplicationTests`, `PaymentFailedNotificationInboxDeduplicationTests`)
+  that mirror the existing `OrderPaidNotificationInboxDeduplicationTests` pattern faithfully.
+- **WR-03** is closed by a single, surgical change — wrapping the per-tick `getOrder(id)` call in
+  `catchError(() => EMPTY)` inside the `switchMap` — exactly as the original finding's fix
+  suggestion described. The `git diff` confirms this is a 2-line change with no incidental
+  behavior changes, and the new spec covers both the "transient error, then recovers" and
+  "destroy stops polling" cases.
 
-The remaining findings are test-reliability and quality gaps: a no-op `RemoveAll<DbInitializer>()` call
-newly authored in `NotificationsEndpointSteps.cs` (mirrors a pre-existing bug elsewhere in the repo),
-an asymmetric inbox-deduplication test-coverage gap between the three Notifications consumers, and a
-polling loop in the Angular order-detail page that silently and permanently stops on the first
-transient HTTP error.
-
-## Critical Issues
-
-### CR-01: Scheduled OrderShipped is never cancelled when an order is subsequently Cancelled — customers can receive a false "Your order has shipped" notification
-
-**File:** `src/services/fulfillment/ECommerce.Fulfillment.API/Features/Fulfillment/OrderPaidConsumer.cs:24-31`
-**Also implicated:** `src/services/orders/ECommerce.Orders.API/Features/Orders/OrderStateMachine.cs:201-224` (FulfillmentFailed→Cancelled compensation), `src/services/notifications/ECommerce.Notifications.API/Consumers/OrderShippedNotificationConsumer.cs:20-28`
-
-**Issue:**
-`OrderPaidConsumer` reacts to `OrderStatusChanged(NewStatus == "Paid")` by scheduling a delayed
-`OrderShipped` publish (`ProcessingSeconds`, default 45s):
-
-```csharp
-await context.SchedulePublish(delay, new OrderShipped(
-    MessageId: Guid.NewGuid(),
-    CorrelationId: msg.OrderId,
-    CausationId: msg.MessageId,
-    OccurredAt: now,
-    CheckoutId: msg.OrderId,
-    UserId: msg.UserId,
-    ShippedAt: now + delay));
-```
-
-This scheduled message is never cancelled. `OrderStateMachine` already supports a legitimate
-Paid→Cancelled compensation path via `FulfillmentFailedEvent` (published, in production, by
-`Checkout.API`'s "simulate fulfillment failure" endpoint while the order is `Paid` —
-`CheckoutEndpoints.cs`), which cancels the order and publishes `RefundPayment`. Reproduction:
-
-1. Order reaches `Paid` → Fulfillment schedules `OrderShipped` for `now + 45s`.
-2. Within that 45s window, an authorized user calls the fulfillment-failure demo endpoint
-   (`POST .../simulate-fulfillment-failure` or equivalent, gated only on `snapshot.Status == "Paid"`).
-3. The saga transitions Paid→Cancelled and publishes `RefundPayment` + `OrderStatusChanged(Cancelled)`.
-4. ~45s later, Fulfillment's previously-scheduled `OrderShipped` still fires. The saga's
-   `During(Cancelled, ...)` block correctly absorbs it (`Ignore(OrderShippedEvent)`, line 286) so the
-   saga itself doesn't fault — but `OrderShippedNotificationConsumer` has no such awareness: it
-   unconditionally inserts `"Your order has shipped."` into the customer's notification feed for an
-   order that was actually cancelled and refunded.
-
-The customer now sees two contradictory notifications ("Payment failed"/order cancelled, then later
-"Your order has shipped") for the same order, and the order-detail page's status chip will correctly
-show `Cancelled` while the notifications list claims it shipped. This is a genuine, reachable
-data-correctness bug, not a hypothetical race — the demo endpoint exists specifically to trigger it
-while the order is `Paid`.
-
-**Fix:** Capture the scheduled message token (`ScheduledMessage<OrderShipped>`) and persist/unschedule
-it when the order leaves `Paid` via a non-shipping path, or — simpler for this architecture — have
-`OrderShippedNotificationConsumer` (and/or the saga's `OrderShippedEvent` handler) check the current
-order status before treating a late `OrderShipped` as ship-worthy, e.g. by having Fulfillment publish a
-distinguishable "shipment cancelled" signal, or by unscheduling in `OrderStateMachine`:
-
-```csharp
-When(FulfillmentFailedEvent)
-    .Then(ctx => ctx.Saga.FailureReason = $"Fulfillment failed — order cancelled and refunded ({ctx.Message.Reason})")
-    // ... existing Publish(RefundPayment) / Publish(OrderStatusChanged) ...
-```
-would need a corresponding `context.CancelScheduledPublish<OrderShipped>(...)` call in Fulfillment, or
-Fulfillment itself should re-check the order's current status (e.g. via a lightweight read-model query)
-immediately before publishing `OrderShipped`, and skip the publish if the order is no longer `Paid`.
+No new critical issues were introduced. Two warnings and two info items were found in the new
+`OrderStatusSnapshotConsumer` — the linchpin of the CR-01 fix — around concurrent-write safety and
+test-coverage symmetry with its sibling consumers.
 
 ## Warnings
 
-### WR-01: `RemoveAll<DbInitializer>()` in the Notifications test factory is a no-op — does not achieve the isolation the code claims
+### WR-01: `OrderStatusSnapshotConsumer`'s find-then-write is not safe under concurrent delivery of two `OrderStatusChanged` messages for the same order
 
-**File:** `src/services/notifications/ECommerce.Notifications.Tests/Integration/NotificationsEndpointSteps.cs:58`
+**File:** `src/services/notifications/ECommerce.Notifications.API/Consumers/OrderStatusSnapshotConsumer.cs:22-37`
 
-**Issue:**
+**Issue:** The consumer does a classic check-then-act:
+
 ```csharp
-builder.ConfigureServices(services =>
+var existing = await db.OrderStatusSnapshots.FindAsync([msg.OrderId], context.CancellationToken);
+
+if (existing is null)
 {
-    // Remove DbInitializer so it does not race with test-driven migrations/seeding.
-    services.RemoveAll<DbInitializer>();
-    ...
-});
-```
-`DbInitializer` is registered in `Program.cs` via `builder.Services.AddHostedService<DbInitializer>()`,
-which under the hood registers the descriptor as `ServiceDescriptor.Singleton<IHostedService, DbInitializer>()`
-— i.e. `ServiceType == typeof(IHostedService)`, not `typeof(DbInitializer)`.
-`services.RemoveAll<DbInitializer>()` filters by `descriptor.ServiceType == typeof(DbInitializer)`, which
-never matches, so this call removes nothing. `DbInitializer.StartAsync` (which calls
-`db.Database.MigrateAsync(cancellationToken)`) still runs during test host startup, concurrently with
-the test's own `db.Database.MigrateAsync()` calls in `CreateDbContextAsync()` / `Given_HarnessWithPostgresOutbox()`.
-EF Core's migration lock generally prevents outright corruption, but the intended isolation described by
-the comment does not actually exist, and this masks the real behavior for anyone reading the test.
-
-Note: this exact pattern (`RemoveAll<DbInitializer>()` against an `AddHostedService`-registered type)
-already exists in `OrdersEndpointSteps.cs:66` and `ProductsEndpointSteps.cs:41` elsewhere in the repo, so
-this is a systemic issue being propagated into a third project by this phase rather than a wholly new
-defect — still worth fixing here since this file is new in this phase.
-
-**Fix:** Remove by implementation type or remove all hosted services in the test host:
-```csharp
-services.RemoveAll(d => d.ServiceType == typeof(IHostedService)
-    && d.ImplementationType == typeof(DbInitializer));
-```
-or, if no other hosted services matter in the test host:
-```csharp
-services.RemoveAll<IHostedService>();
-```
-
-### WR-02: Asymmetric inbox-deduplication test coverage across the three Notifications consumers
-
-**File:** `src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderShippedNotificationConsumerSteps.cs`, `src/services/notifications/ECommerce.Notifications.Tests/Integration/PaymentFailedNotificationConsumerSteps.cs`
-
-**Issue:** All three Notifications consumers (`OrderPaidNotificationConsumer`, `OrderShippedNotificationConsumer`,
-`PaymentFailedNotificationConsumer`) run behind the same `AddEntityFrameworkOutbox<NotificationsDbContext>`
-inbox middleware configured in `Program.cs:41-50`. Only `OrderPaidNotificationConsumer` has a dedicated
-redelivery/dedup integration test (`OrderPaidNotificationInboxDeduplicationTests.cs`, proving exactly one
-`InboxState` row and exactly one `NotificationEntry` row for a duplicate-MessageId delivery). The other two
-consumers' Steps classes (`OrderShippedNotificationConsumerSteps`, `PaymentFailedNotificationConsumerSteps`)
-build their harness without `AddEntityFrameworkOutbox` at all and never assert on `InboxState`/duplicate
-delivery, so a redelivery bug specific to either of those two consumers (e.g. an accidental change that
-breaks inbox wiring for just one receive endpoint) would not be caught by the test suite despite the
-project's own established convention (used for `OrderPaidConsumer` in Fulfillment and both payment
-consumers) of proving idempotency per-consumer.
-
-**Fix:** Add `OrderShippedNotificationInboxDeduplicationTests` / `PaymentFailedNotificationInboxDeduplicationTests`
-mirroring `OrderPaidNotificationInboxDeduplicationSteps.cs`'s pattern (Postgres-backed harness with
-`AddEntityFrameworkOutbox`, publish the same pinned `MessageId` twice, assert one `InboxState` row and one
-`NotificationEntry` row).
-
-### WR-03: Order-detail polling permanently stops on the first transient HTTP error, with no retry and no user-facing indication
-
-**File:** `src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.ts:73-87`
-
-**Issue:**
-```ts
-private startPolling(id: string): void {
-  interval(1500)
-    .pipe(
-      switchMap(() => this.ordersService.getOrder(id)),
-      takeWhile((order) => {
-        this.order.set(order);
-        return !ORDER_DETAIL_TERMINAL_STATUSES.includes(order.status);
-      }, true),
-      takeUntilDestroyed(this.destroyRef),
-    )
-    .subscribe({
-      next: () => {},
-      error: () => {},
-    });
+    db.OrderStatusSnapshots.Add(new OrderStatusSnapshot { OrderId = msg.OrderId, ... });
+}
+else if (msg.ChangedAt >= existing.UpdatedAt)
+{
+    existing.Status = msg.NewStatus;
+    existing.UpdatedAt = msg.ChangedAt;
 }
 ```
-If any single poll request errors (e.g. a transient 5xx/network blip), the inner observable produced by
-`switchMap` errors, which propagates through `takeWhile`/`takeUntilDestroyed` and terminates the whole
-`interval` subscription — polling stops permanently for the rest of the component's lifetime. The
-`error: () => {}` handler swallows the error silently; neither `hasError` nor any other signal is set
-during polling (those are only used for the initial `ngOnInit` load), so the user is left staring at a
-stale, possibly non-terminal status (e.g. "Preparing your shipment…") with no indication that live
-updates have stopped and no way to recover short of a full page reload.
 
-**Fix:** Recover from per-poll errors instead of letting them terminate the stream, e.g.:
-```ts
-switchMap(() => this.ordersService.getOrder(id).pipe(catchError(() => EMPTY))),
-```
-(and consider surfacing a subtle "updates paused" indicator so the user isn't misled by a stale status).
+If two `OrderStatusChanged` messages for the *same* `OrderId` (e.g. `Paid` followed shortly by
+`Cancelled`, which is exactly the CR-01 reproduction scenario) are dispatched to two concurrently
+running instances of this consumer, both can read `existing == null` before either commits, and
+both will attempt `Add` with the same `OrderId` primary key. `Program.cs` does not configure a
+`ConcurrentMessageLimit`/partitioner/session on this consumer's receive endpoint, so nothing in the
+reviewed code rules this out — MassTransit's default receive-endpoint concurrency can dispatch more
+than one message at a time. The result is a `DbUpdateException` (unique-constraint violation) on
+`SaveChangesAsync`, which throws out of `Consume` uncaught. Because there is no visible
+`UseMessageRetry` policy configured for this consumer's endpoint, the message is likely faulted
+rather than retried, meaning the snapshot for that order can be left stale/missing — precisely the
+condition the CR-01 fix depends on to suppress a false "shipped" notification.
 
-### WR-04: `AuthorisePaymentConsumer.Consume` throws for an unrecognized `Outcome` with no consumer-facing test coverage for the resulting message-fault behavior
+**Fix:** Make the write idempotent under races, e.g. an upsert via raw SQL (`ON CONFLICT (order_id)
+DO UPDATE ... WHERE excluded.updated_at >= order_status_snapshots.updated_at`), or catch
+`DbUpdateException` on the insert path and retry as an update, or constrain this consumer's receive
+endpoint to `ConcurrentMessageLimit = 1` / use a partitioner keyed on `OrderId` so per-order
+ordering and mutual exclusion are guaranteed.
 
-**File:** `src/services/payments/ECommerce.Payments.API/Features/Payments/AuthorisePaymentConsumer.cs:42-48`
+### WR-02: `OrderStatusSnapshotConsumer` has no dedicated inbox-deduplication integration test, unlike its sibling consumers in this same delta
 
-**Issue:** The `default` branch throws `InvalidOperationException` for a corrupted/unrecognized
-`ProcessedPayment.Outcome`. That's a reasonable "loud failure" choice per the comment, but note the
-consequence for production behavior: this throw happens *inside* the EF Core outbox transaction/consume
-pipeline, so MassTransit will retry-then-fault the message per its default retry policy, and — because
-this consumer redelivers the *same* `CheckoutId` on every retry — it will deterministically fault every
-single time (not a transient condition), permanently stalling that checkout's payment outcome and
-leaving the corresponding `OrderStateMachine` instance stuck in `Paid`/`Pending` forever with no
-compensating timeout once `PaymentAuthorised`/`PaymentFailed` can never be published for that order. This
-isn't reachable through any current code path (no writer produces an out-of-enum `Outcome` value today),
-so it's not a Critical, but it's a latent "stuck order" trap with no operational mitigation (no
-dead-letter alerting/visibility described anywhere in the reviewed files) if the enum of outcomes is ever
-extended without updating this switch.
+**File:** `src/services/notifications/ECommerce.Notifications.Tests/Integration/OrderStatusSnapshotConsumerSteps.cs`
 
-**Fix:** At minimum, log a structured error with enough context to alert an operator before/instead of
-throwing, or ensure there's a documented dead-letter/alerting story for Payments' receive endpoint so a
-stuck checkout doesn't silently retry forever.
+**Issue:** Plan 05-10 added `OrderShippedNotificationInboxDeduplicationTests` and
+`PaymentFailedNotificationInboxDeduplicationTests` specifically to close the WR-02 gap ("every
+consumer should have a redelivery/dedup test"). `OrderStatusSnapshotConsumer` is new in this same
+delta (05-09) and is consumed on a receive endpoint that gets the same
+`UseEntityFrameworkOutbox<NotificationsDbContext>` inbox middleware as every other consumer
+(`Program.cs:48-51`), yet its `Steps` class builds the harness with only
+`services.AddMassTransitTestHarness(x => x.AddConsumer<OrderStatusSnapshotConsumer>())` — no
+`AddEntityFrameworkOutbox`, no Postgres fixture, and no assertion on `InboxState`/duplicate
+delivery. This reintroduces exactly the asymmetric-coverage pattern WR-02 was written to eliminate,
+for the one consumer that is arguably most safety-critical here (its correctness is what CR-01's
+suppression check relies on).
+
+**Fix:** Add an `OrderStatusSnapshotInboxDeduplicationTests`/`Steps` pair mirroring
+`OrderShippedNotificationInboxDeduplicationSteps.cs` (Postgres-backed harness with
+`AddEntityFrameworkOutbox`, publish the same pinned `MessageId` twice, assert one `InboxState` row
+and the snapshot reflects a single applied update, not two).
 
 ## Info
 
-### IN-01: `iconFor()` has no default/exhaustiveness guard against future `NotificationEventType` additions
+### IN-01: Status literals ("Cancelled"/"Failed") are duplicated as unchecked string constants across the suppression check with no shared enum/constant
 
-**File:** `src/frontend/ecommerce-app/src/app/features/notifications/notifications-page/notifications-page.component.ts:40-49`
+**File:** `src/services/notifications/ECommerce.Notifications.API/Consumers/OrderShippedNotificationConsumer.cs:16`
 
-**Issue:** The `switch` over `NotificationEventType` relies on TypeScript's control-flow exhaustiveness
-analysis (no `default` case) to guarantee a return in every branch. That works today, but if
-`NotificationEventType` gains a new member without updating this switch, the change won't produce a
-compile error unless `strict`/`noImplicitReturns` catches it project-wide — the function would then
-return `undefined` at runtime for the new event type, rendering a blank `<mat-icon>`.
+**Issue:** `snapshot.Status == "Cancelled" || snapshot.Status == "Failed"` re-derives the exact
+status spelling used independently in `OrderStateMachine.cs` (`NewStatus: "Cancelled"`, etc.).
+There is no shared constant or enum tying these together, so a future rename/typo of the status
+string in the Orders service (or in this file) would silently defeat the CR-01 suppression fix —
+`snapshot.Status` would simply never match, and the false "shipped" notification would resurface
+with no compiler or test signal pointing at the root cause. (This mirrors a pre-existing pattern
+already used elsewhere in the codebase for these same status strings, so it isn't a new class of
+problem — but it is now guarding a correctness-critical suppression check.)
 
-**Fix:** Add an explicit exhaustiveness assertion, e.g. a `default: { const _exhaustive: never = eventType; return _exhaustive; }`, to force a compile-time error on future additions.
+**Fix:** Introduce a shared `OrderStatus` constants class/enum in `Contracts` (or at minimum a
+`private static readonly string[] TerminalNonShippedStatuses = ["Cancelled", "Failed"]` local
+constant reused by both the check and its tests) so a spelling drift fails loudly rather than
+silently.
 
-### IN-02: Inconsistent assertion style in `AuthorisePaymentConsumerTests.cs`
+### IN-02: The CR-01 fix narrows, but does not eliminate, the false-"shipped"-notification race — this residual risk isn't documented anywhere
 
-**File:** `src/services/payments/ECommerce.Payments.Tests/Integration/AuthorisePaymentConsumerTests.cs:23,46,58,75,89,96,113,114,130`
+**File:** `src/services/notifications/ECommerce.Notifications.API/Consumers/OrderShippedNotificationConsumer.cs:15-23`, `src/services/notifications/ECommerce.Notifications.API/Consumers/OrderStatusSnapshotConsumer.cs`
 
-**Issue:** This test class mixes xUnit's `Assert.Equal(...)` with the rest of the codebase's established
-FluentAssertions `.Should()` style (used consistently in the corresponding `*Steps.cs` helper methods and
-in every other reviewed test file). Purely stylistic, but it's a drift from the codebase's own convention
-introduced within this phase's diff.
+**Issue:** The suppression check only works if `OrderStatusSnapshotConsumer` has already applied
+the `Cancelled`/`Failed` transition to the snapshot table by the time the delayed `OrderShipped`
+event is consumed. `OrderStatusChanged` and `OrderShipped` are published from different services
+(Orders vs. Fulfillment) on independent receive endpoints with no message session/partitioning tying
+their delivery order together, so strict ordering is not guaranteed by the transport. In practice
+the original 45-second `SchedulePublish` delay in Fulfillment (`OrderPaidConsumer`) gives ample time
+for the snapshot update to land, so this is a large improvement over the pre-fix behavior (which had
+*no* mitigation at all) — but it is a best-effort narrowing of the race window, not a hard guarantee,
+and none of the new code comments, tests, or the 05-09 plan/summary call this out as an accepted
+residual risk.
 
-**Fix:** Use `(await _steps.Then_PublishedCount<T>()).Should().Be(n)` for consistency with the rest of the suite.
-
-### IN-03: `FulfillmentOptions.ProcessingSeconds` has no validation against zero/negative configuration values
-
-**File:** `src/services/fulfillment/ECommerce.Fulfillment.API/Features/Fulfillment/FulfillmentOptions.cs:13`
-
-**Issue:** `ProcessingSeconds` is bound directly from configuration with no `[Range]`/`IValidateOptions`
-guard. A misconfigured negative value would cause `TimeSpan.FromSeconds(options.Value.ProcessingSeconds)`
-in `OrderPaidConsumer.cs:21` to throw `ArgumentOutOfRangeException` for every `Paid` transition, faulting
-every message on that receive endpoint.
-
-**Fix:** Add options validation (`services.AddOptions<FulfillmentOptions>().Bind(...).Validate(o => o.ProcessingSeconds > 0, "ProcessingSeconds must be positive")`) consistent with the rest of the stack's FluentValidation-first convention.
-
-### IN-04: Initial HTTP load subscriptions are not tied to `takeUntilDestroyed`, unlike the polling subscription
-
-**File:** `src/frontend/ecommerce-app/src/app/features/orders/order-detail/order-detail.component.ts:60-70`, `src/frontend/ecommerce-app/src/app/features/notifications/notifications-page/notifications-page.component.ts:59-68`
-
-**Issue:** Both components' initial `ngOnInit` HTTP calls are a plain `.subscribe({...})` with no
-`takeUntilDestroyed(this.destroyRef)`, while `order-detail.component.ts`'s polling subscription
-explicitly adds it. Since these are one-shot HTTP requests they complete on their own and this is low
-risk in practice (Angular's `HttpClient` observables complete after one emission), but if the component is
-destroyed while the request is still in flight, `order.set(...)` / `startPolling(id)` will still execute
-against a torn-down component, which is inconsistent with the defensive pattern already used two lines
-below for the polling stream.
-
-**Fix:** Add `takeUntilDestroyed(this.destroyRef)` to the initial load subscription for consistency.
+**Fix:** No code change required; add a one-line comment on the suppression check (or in the
+consumer's existing XML doc) noting that this is a best-effort mitigation dependent on the
+snapshot being updated before the delayed `OrderShipped` arrives, and that a stronger guarantee
+would require Fulfillment to re-check order status synchronously (or via a saga-owned cancellation
+token) immediately before publishing, as the original CR-01 finding's alternate fix suggested.
 
 ---
 
-_Reviewed: 2026-08-19T00:00:00Z_
+_Reviewed: 2026-08-21T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
