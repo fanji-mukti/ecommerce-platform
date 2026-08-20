@@ -37,6 +37,7 @@ try
         x.AddConsumer<OrderPaidNotificationConsumer>();
         x.AddConsumer<OrderShippedNotificationConsumer>();
         x.AddConsumer<PaymentFailedNotificationConsumer>();
+        x.AddConsumer<OrderStatusSnapshotConsumer>();
 
         x.AddEntityFrameworkOutbox<NotificationsDbContext>(o =>
         {

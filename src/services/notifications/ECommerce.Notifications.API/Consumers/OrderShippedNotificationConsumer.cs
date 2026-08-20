@@ -12,6 +12,16 @@ public class OrderShippedNotificationConsumer(NotificationsDbContext db, ILogger
     {
         var msg = context.Message;
 
+        var snapshot = await db.OrderStatusSnapshots.FindAsync([msg.CheckoutId], context.CancellationToken);
+        if (snapshot is not null && (snapshot.Status == "Cancelled" || snapshot.Status == "Failed"))
+        {
+            logger.LogWarning(
+                "Suppressing 'shipped' notification for CheckoutId={CheckoutId}: current known status is {Status}, not consistent with having shipped",
+                msg.CheckoutId,
+                snapshot.Status);
+            return;
+        }
+
         logger.LogInformation(
             "OrderShipped received: CheckoutId={CheckoutId}, UserId={UserId}",
             msg.CheckoutId,
