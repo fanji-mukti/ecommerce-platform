@@ -228,6 +228,49 @@ describe('OrderDetailComponent', () => {
     httpMock.verify();
   });
 
+  it('recovers from a transient poll error and still reaches a terminal status on the next tick', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({
+      imports: [OrderDetailComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(withFetch()),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { params: { id: 'o1' } } } },
+      ],
+    });
+    await TestBed.compileComponents();
+    httpMock = TestBed.inject(HttpTestingController);
+
+    const fixture = TestBed.createComponent(OrderDetailComponent);
+    fixture.detectChanges();
+
+    httpMock.expectOne('/api/orders/o1').flush(paidOrder);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.isShipping()).toBe(true);
+
+    // Transient error on the first poll tick — polling loop must survive it.
+    await vi.advanceTimersByTimeAsync(1500);
+    httpMock.expectOne('/api/orders/o1').flush(null, { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.order()?.status).toBe('Paid');
+    expect(fixture.componentInstance.isShipping()).toBe(true);
+
+    // Next tick succeeds and reaches a terminal status — proving the loop kept ticking.
+    const fulfilledOrder: OrderDetail = { ...paidOrder, status: 'Fulfilled' };
+    await vi.advanceTimersByTimeAsync(1500);
+    httpMock.expectOne('/api/orders/o1').flush(fulfilledOrder);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.order()?.status).toBe('Fulfilled');
+    expect(fixture.componentInstance.isShipping()).toBe(false);
+
+    // Polling must have stopped at the terminal status — no further request pending.
+    await vi.advanceTimersByTimeAsync(3000);
+    httpMock.verify();
+  });
+
   it('stops polling on component destroy', async () => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({
