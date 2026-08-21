@@ -13,7 +13,7 @@
 - [x] **Phase 2: Identity, Catalog & Gateway** — User can register/login and browse catalog through YARP gateway with outbox/inbox wired from day one (completed 2026-06-17)
 - [ ] **Phase 3: Cart & Orders Skeleton** — Per-user Redis cart and Orders aggregate with CQRS read model and state machine
 - [x] **Phase 4: Checkout Saga & Payments** — Headline demo: place order triggers saga, deterministic failure shows live compensation (gap closure in progress — 04-07-PLAN.md addresses 04-VERIFICATION.md's CR-01 blocker + WR-01..04) (completed 2026-08-12)
-- [ ] **Phase 5: Fulfillment & Notifications** — Complete happy-path and compensation flows end-to-end with in-app notification inbox
+- [x] **Phase 5: Fulfillment & Notifications** — Complete happy-path and compensation flows end-to-end with in-app notification inbox (completed 2026-08-19)
 - [ ] **Phase 6: Hardening & Azure Deployment** — Terraform-provisioned Azure infrastructure with remote state, dev/prod environments, and production-grade resilience
 
 ---
@@ -174,7 +174,34 @@ Plans:
 3. User can GET `/notifications` to view an in-app inbox containing entries for the saga lifecycle events they participated in (`OrderPaid`, `OrderShipped`, `PaymentFailed`).
 4. Notifications service idempotently consumes saga events from the producing-context topics and persists inbox entries, verified by a forced-redelivery test producing no duplicate inbox rows.
 
-**Plans:** TBD
+**Plans:** 11/11 plans complete
+Plans:
+
+- [x] 05-01-PLAN.md — Contracts: new OrderShipped event + UserId (D-03) added to OrderStatusChanged/PaymentFailed/AuthorisePayment
+- [x] 05-02-PLAN.md — Angular /orders/:id: "Preparing your shipment…" indicator (D-07) + net-new live polling (D-08)
+- [x] 05-03-PLAN.md — Orders saga wires OrderShipped (Paid→Fulfilled) + UserId propagated through Orders/Payments publish sites
+- [x] 05-04-PLAN.md — Fulfillment service build-out: DbContext/Options/consumer/Program.cs (FUL-01/FUL-02) + AppHost postgres-reference fix
+- [x] 05-05-PLAN.md — Notifications backend: NotificationEntry entity, 3 consumers, JWT-scoped GET /notifications (NOT-01/NOT-02)
+- [x] 05-06-PLAN.md — Fulfillment.Tests: new test project, consumer scheduling test, forced-redelivery inbox dedup test
+- [x] 05-07-PLAN.md — Notifications.Tests: endpoint IDOR test, 3 consumer tests, forced-redelivery inbox dedup test
+- [x] 05-08-PLAN.md — Angular /notifications page: mat-list inbox, nav link (D-05/D-06)
+- [x] 05-09-PLAN.md — Gap closure: OrderStatusSnapshot + suppression fix for false "shipped" notification on cancelled orders (05-VERIFICATION.md CR-01 blocker)
+- [x] 05-10-PLAN.md — Gap closure: forced-redelivery inbox-dedup tests for OrderShippedNotificationConsumer + PaymentFailedNotificationConsumer (05-REVIEW.md WR-02)
+- [x] 05-11-PLAN.md — Gap closure: order-detail polling catchError recovery (05-REVIEW.md WR-03)
+
+**UI hint:** yes (added retroactively per 05-CONTEXT.md D-05 — ROADMAP originally did not flag this phase for UI work)
+
+**Wave 1** *(parallel, no dependencies)*: 05-01, 05-02
+**Wave 2** *(blocked on Wave 1, parallel — no file overlap)*: 05-03, 05-04, 05-05 (all depend only on 05-01)
+**Wave 3** *(blocked on Wave 2, parallel — no file overlap)*: 05-06 (depends on 05-04), 05-07 (depends on 05-05), 05-08 (depends on 05-05)
+**Gap closure** *(addresses 05-VERIFICATION.md CR-01 + 05-REVIEW.md WR-02/WR-03, no dependency on Wave 1-3 plans beyond files already merged, all parallel — no file overlap)*: 05-09, 05-10, 05-11
+
+**Cross-cutting constraints:**
+
+- No new persisted `OrderStateMachine` state — stays `Pending/Paid/Fulfilled/Cancelled/Failed` per ADR-0009 (D-07)
+- Fulfillment is a stateless MassTransit consumer, not a saga — no compensation branch, D-02 fixes it as always-succeed
+- Phase 4's `POST /checkout/{id}/simulate-fulfillment-failure` demo endpoint is untouched — it remains the only way to exercise `FulfillmentFailed`
+- `UserId` added to `OrderStatusChanged`/`PaymentFailed`/`AuthorisePayment` (D-03) — no synchronous cross-service lookups introduced anywhere in this phase
 
 ### Phase 6: Hardening & Azure Deployment
 
@@ -202,7 +229,7 @@ Plans:
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
 | 4. Checkout Saga & Payments | 7/7 | Complete   | 2026-08-12 |
-| 5. Fulfillment & Notifications | 0/? | Not started | - |
+| 5. Fulfillment & Notifications | 11/11 | Complete    | 2026-08-21 |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
 ---
@@ -223,3 +250,4 @@ Every v1 requirement maps to exactly one phase. See `REQUIREMENTS.md` ## Traceab
 *Phase 3 planned: 2026-07-22*
 *Phase 4 planned: 2026-08-08*
 *Phase 4 gap closure planned: 2026-08-12*
+*Phase 5 planned: 2026-08-14*

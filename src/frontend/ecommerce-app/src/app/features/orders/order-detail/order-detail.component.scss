@@ -24,6 +24,13 @@
     margin-bottom: var(--space-md);
   }
 
+  .shipping-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+  }
+
   .failure-reason {
     font-size: 16px;
     color: #d32f2f;

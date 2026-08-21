@@ -12,7 +12,8 @@ A working checkout saga that spans Catalog, Cart, Orders, Payments, Fulfillment,
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Fulfillment service — consume order events, update fulfillment status (Validated in Phase 5: Fulfillment & Notifications)
+- [x] Notifications service — consume domain events, in-app notification inbox (email deferred — Validated in Phase 5: Fulfillment & Notifications)
 
 ### Active
 
@@ -22,8 +23,6 @@ A working checkout saga that spans Catalog, Cart, Orders, Payments, Fulfillment,
 - [ ] Orders service — create and track orders, expose order history
 - [ ] Identity service — user sign-up, login, session management
 - [ ] Payments service — simulated payment gateway, publish payment result events
-- [ ] Fulfillment service — consume order events, update fulfillment status
-- [ ] Notifications service — consume domain events, send email/in-app notifications
 - [ ] Shared Contracts library — ASB message type definitions referenced by all services
 - [ ] Checkout saga — orchestrate multi-service checkout flow via process manager
 - [ ] Angular frontend — browse catalog, manage cart, complete checkout, view orders
@@ -93,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 after initialization*
+*Last updated: 2026-08-21 after Phase 5: Fulfillment & Notifications*

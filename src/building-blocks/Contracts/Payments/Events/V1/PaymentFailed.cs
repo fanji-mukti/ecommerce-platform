@@ -8,6 +8,7 @@ public record PaymentFailed(
     Guid CausationId,
     DateTimeOffset OccurredAt,
     Guid CheckoutId,
+    string UserId,
     decimal Amount,
     string Reason,
     DateTimeOffset FailedAt

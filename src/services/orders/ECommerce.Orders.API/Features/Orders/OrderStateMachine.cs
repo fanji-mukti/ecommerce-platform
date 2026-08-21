@@ -30,6 +30,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
     public Event<PaymentAuthorised> PaymentAuthorisedEvent { get; private set; } = null!;
     public Event<PaymentFailed> PaymentFailedEvent { get; private set; } = null!;
     public Event<FulfillmentFailed> FulfillmentFailedEvent { get; private set; } = null!;
+    public Event<OrderShipped> OrderShippedEvent { get; private set; } = null!;
 
     public Schedule<Order, CheckoutTimeoutExpired> CheckoutTimeout { get; private set; } = null!;
 
@@ -42,6 +43,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
         Event(() => PaymentAuthorisedEvent, x => x.CorrelateById(m => m.Message.CheckoutId));
         Event(() => PaymentFailedEvent, x => x.CorrelateById(m => m.Message.CheckoutId));
         Event(() => FulfillmentFailedEvent, x => x.CorrelateById(m => m.Message.CheckoutId));
+        Event(() => OrderShippedEvent, x => x.CorrelateById(m => m.Message.CheckoutId));
 
         // NOTE: CheckoutTimeoutExpired does NOT get a separate Event<T> declaration/Event()
         // registration — Schedule() below already registers it as CheckoutTimeout.Received
@@ -80,6 +82,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                     CausationId: ctx.Message.MessageId,
                     OccurredAt: DateTimeOffset.UtcNow,
                     CheckoutId: ctx.Saga.CorrelationId,
+                    UserId: ctx.Saga.UserId,
                     Amount: ctx.Message.TotalAmount,
                     SimulatePaymentFailure: ctx.Message.SimulatePaymentFailure))
                 .Schedule(CheckoutTimeout,
@@ -119,6 +122,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                     CausationId: ctx.Message.MessageId,
                     OccurredAt: DateTimeOffset.UtcNow,
                     OrderId: ctx.Saga.CorrelationId,
+                    UserId: ctx.Saga.UserId,
                     PreviousStatus: "Pending",
                     NewStatus: "Paid",
                     ChangedAt: ctx.Message.AuthorisedAt,
@@ -133,6 +137,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                     CausationId: ctx.Message.MessageId,
                     OccurredAt: DateTimeOffset.UtcNow,
                     OrderId: ctx.Saga.CorrelationId,
+                    UserId: ctx.Saga.UserId,
                     PreviousStatus: "Pending",
                     NewStatus: "Cancelled",
                     ChangedAt: ctx.Message.FailedAt,
@@ -148,6 +153,7 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                     CausationId: Guid.Empty,
                     OccurredAt: DateTimeOffset.UtcNow,
                     OrderId: ctx.Saga.CorrelationId,
+                    UserId: ctx.Saga.UserId,
                     PreviousStatus: "Pending",
                     NewStatus: "Cancelled",
                     ChangedAt: DateTimeOffset.UtcNow,
@@ -165,6 +171,11 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             // one didn't, which is exactly the reachability-assumption gap that let CR-01/CR-02
             // slip through two prior review passes. Absorb here too, for the same reason.
             Ignore(FulfillmentFailedEvent),
+            // 05-03: OrderShipped cannot currently reach a Pending saga (Fulfillment only
+            // ships after Paid), but every other During() block absorbs all registered event
+            // types defensively — mirrors the FulfillmentFailedEvent rationale immediately
+            // above.
+            Ignore(OrderShippedEvent),
             // 04-07-REVIEW WR-02: previously a bare When(OrderStatusChangedEvent) with no
             // activity chain. Switched to Ignore(...) for consistency with every other
             // trailing catch-all in this file (Paid/Cancelled/Fulfilled/Failed all use
@@ -205,11 +216,29 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
                     CausationId: ctx.Message.MessageId,
                     OccurredAt: DateTimeOffset.UtcNow,
                     OrderId: ctx.Saga.CorrelationId,
+                    UserId: ctx.Saga.UserId,
                     PreviousStatus: "Paid",
                     NewStatus: "Cancelled",
                     ChangedAt: ctx.Message.FailedAt,
                     FailureReason: ctx.Saga.FailureReason))
                 .TransitionTo(Cancelled),
+            // FUL-02/SC1/SC2: Fulfillment publishes OrderShipped once the shipment is
+            // dispatched — the real Paid->Fulfilled transition (closes the loop opened by
+            // Initially()'s AuthorisePayment publish).
+            When(OrderShippedEvent)
+                .Then(ctx => ctx.Saga.UpdatedAt = ctx.Message.ShippedAt)
+                .Publish(ctx => new OrderStatusChanged(
+                    MessageId: Guid.NewGuid(),
+                    CorrelationId: ctx.Saga.CorrelationId,
+                    CausationId: ctx.Message.MessageId,
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    OrderId: ctx.Saga.CorrelationId,
+                    UserId: ctx.Saga.UserId,
+                    PreviousStatus: "Paid",
+                    NewStatus: "Fulfilled",
+                    ChangedAt: ctx.Message.ShippedAt,
+                    FailureReason: null))
+                .TransitionTo(Fulfilled),
             // Pitfall 2 (ASB unschedule race, GitHub MassTransit#3753): a scheduled timeout
             // unscheduled very close to its delivery time, or a redelivered payment outcome
             // (PAY-03's idempotent Payments service may legitimately redeliver the same
@@ -251,6 +280,10 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
             Ignore(FulfillmentFailedEvent),
+            // T-05-04: a late/redelivered OrderShipped after the saga already left Paid
+            // (e.g. cancelled via FulfillmentFailed racing a shipment that was already in
+            // flight) must be absorbed, not faulted — same discipline as every other event.
+            Ignore(OrderShippedEvent),
             Ignore(OrderStatusChangedEvent),
             // 04-07-REVIEW CR-02: see the matching Ignore(OrderCreatedEvent) note in
             // During(Pending, ...) above — a redelivered OrderCreated must be absorbed here too.
@@ -268,6 +301,9 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
             Ignore(FulfillmentFailedEvent),
+            // T-05-04: a redelivered OrderShipped after the saga already reached the
+            // terminal Fulfilled state must be absorbed, not faulted.
+            Ignore(OrderShippedEvent),
             Ignore(OrderStatusChangedEvent),
             // 04-07-REVIEW CR-02: see the matching Ignore(OrderCreatedEvent) note in
             // During(Pending, ...) above — a redelivered OrderCreated must be absorbed here too.
@@ -278,6 +314,9 @@ public class OrderStateMachine : MassTransitStateMachine<Order>
             Ignore(PaymentAuthorisedEvent),
             Ignore(PaymentFailedEvent),
             Ignore(FulfillmentFailedEvent),
+            // T-05-04: a late/redelivered OrderShipped after the saga already reached the
+            // terminal Failed state must be absorbed, not faulted.
+            Ignore(OrderShippedEvent),
             Ignore(OrderStatusChangedEvent),
             // 04-07-REVIEW CR-02: see the matching Ignore(OrderCreatedEvent) note in
             // During(Pending, ...) above — a redelivered OrderCreated must be absorbed here too.

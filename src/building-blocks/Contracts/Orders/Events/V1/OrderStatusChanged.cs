@@ -8,6 +8,7 @@ public record OrderStatusChanged(
     Guid CausationId,
     DateTimeOffset OccurredAt,
     Guid OrderId,
+    string UserId,
     string PreviousStatus,
     string NewStatus,
     DateTimeOffset ChangedAt,

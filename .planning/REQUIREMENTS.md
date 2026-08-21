@@ -48,13 +48,13 @@
 
 ### Fulfillment
 
-- [ ] **FUL-01**: Fulfillment service consumes OrderPaid events and starts processing
-- [ ] **FUL-02**: Fulfillment publishes OrderShipped after timer-based processing simulation
+- [x] **FUL-01**: Fulfillment service consumes OrderPaid events and starts processing
+- [x] **FUL-02**: Fulfillment publishes OrderShipped after timer-based processing simulation
 
 ### Notifications
 
-- [ ] **NOT-01**: User can view their in-app notification inbox (GET /notifications)
-- [ ] **NOT-02**: Notifications service consumes saga events (OrderPaid, OrderShipped, PaymentFailed) and persists inbox entries
+- [x] **NOT-01**: User can view their in-app notification inbox (GET /notifications)
+- [x] **NOT-02**: Notifications service consumes saga events (OrderPaid, OrderShipped, PaymentFailed) and persists inbox entries
 
 ### Contracts
 
@@ -182,10 +182,10 @@
 | PAY-02 | Phase 4 | Complete |
 | PAY-03 | Phase 4 | Complete |
 | FE-03 | Phase 4 | Complete |
-| FUL-01 | Phase 5 | Pending |
-| FUL-02 | Phase 5 | Pending |
-| NOT-01 | Phase 5 | Pending |
-| NOT-02 | Phase 5 | Pending |
+| FUL-01 | Phase 5 | Complete |
+| FUL-02 | Phase 5 | Complete |
+| NOT-01 | Phase 5 | Complete |
+| NOT-02 | Phase 5 | Complete |
 | IAC-01 | Phase 6 | Pending |
 | IAC-02 | Phase 6 | Pending |
 | IAC-03 | Phase 6 | Pending |

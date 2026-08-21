@@ -4,6 +4,7 @@
   <a mat-button routerLink="/catalog" routerLinkActive="active-link">Catalog</a>
   @if (isAuthenticated().isAuthenticated) {
     <a mat-button routerLink="/cart" routerLinkActive="active-link">Cart</a>
+    <a mat-button routerLink="/notifications" routerLinkActive="active-link">Notifications</a>
     <span class="username">{{ userData().userData?.name || userData().userData?.email }}</span>
     <button mat-button (click)="signOut()">Sign Out</button>
   } @else {

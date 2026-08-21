@@ -50,10 +50,14 @@ builder.AddProject<Projects.ECommerce_Payments_API>("payments")
 
 builder.AddProject<Projects.ECommerce_Fulfillment_API>("fulfillment")
     .WithHttpEndpoint(port: 5007)
+    .WithReference(postgres)
+    .WaitFor(postgres)
     .WithReference(serviceBus);
 
 var notifications = builder.AddProject<Projects.ECommerce_Notifications_API>("notifications")
     .WithHttpEndpoint(port: 5008)
+    .WithReference(postgres)
+    .WaitFor(postgres)
     .WithReference(serviceBus);
 
 var gateway = builder.AddProject<Projects.ECommerce_Gateway_API>("gateway")

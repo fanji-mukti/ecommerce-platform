@@ -8,6 +8,7 @@ public record AuthorisePayment(
     Guid CausationId,
     DateTimeOffset OccurredAt,
     Guid CheckoutId,
+    string UserId,
     decimal Amount,
     bool SimulatePaymentFailure = false
 ) : IMessageEnvelope;

@@ -91,6 +91,42 @@ public class OrderStateMachineTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task OrderShipped_WhenPaid_TransitionsToFulfilled()
+    {
+        var orderId = Guid.NewGuid();
+
+        await _steps.Given_OrderCreatedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+
+        await _steps.Given_PaymentAuthorisedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Paid);
+
+        // FUL-02/SC1/SC2: Fulfillment's OrderShipped closes the Paid->Fulfilled loop.
+        await _steps.When_OrderShippedPublished(orderId);
+
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Fulfilled);
+    }
+
+    [Fact]
+    public async Task OrderShipped_WhenAlreadyCancelled_IsAbsorbedWithoutFault()
+    {
+        var orderId = Guid.NewGuid();
+
+        await _steps.Given_OrderCreatedPublished(orderId);
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Pending);
+
+        await _steps.Given_PaymentFailedPublished(orderId, reason: "Payment declined");
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Cancelled);
+
+        // T-05-04: a late/redelivered OrderShipped arriving after the saga already left Paid
+        // must be absorbed, not faulted.
+        await _steps.When_OrderShippedPublished(orderId);
+
+        await _steps.Then_SagaExistsInState(orderId, _steps.Machine.Cancelled);
+        await _steps.Then_NoFaultPublished<ECommerce.Fulfillment.Events.V1.OrderShipped>();
+    }
+
+    [Fact]
     public async Task PaymentAuthorised_WhenAlreadyCancelled_IsAbsorbedWithoutFault()
     {
         var orderId = Guid.NewGuid();

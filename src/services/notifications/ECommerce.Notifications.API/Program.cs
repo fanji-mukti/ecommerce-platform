@@ -1,6 +1,8 @@
 using ECommerce.Notifications.API.Consumers;
 using ECommerce.Notifications.API.Data;
+using ECommerce.Notifications.API.Features.Notifications;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Serilog;
 using Serilog.Events;
 using OpenTelemetry.Trace;
@@ -32,6 +34,10 @@ try
     builder.Services.AddMassTransit(x =>
     {
         x.AddConsumer<CatalogSeededConsumer>();
+        x.AddConsumer<OrderPaidNotificationConsumer>();
+        x.AddConsumer<OrderShippedNotificationConsumer>();
+        x.AddConsumer<PaymentFailedNotificationConsumer>();
+        x.AddConsumer<OrderStatusSnapshotConsumer>();
 
         x.AddEntityFrameworkOutbox<NotificationsDbContext>(o =>
         {
@@ -44,20 +50,49 @@ try
             cfg.UseEntityFrameworkOutbox<NotificationsDbContext>(context);
         });
 
-        x.UsingAzureServiceBus((context, cfg) =>
+        var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
+        if (messagingConnectionString == "placeholder")
         {
-            cfg.Host(builder.Configuration.GetConnectionString("messaging"));
-            cfg.ConfigureEndpoints(context);
-        });
+            // Test sentinel (see Orders/Payments' established "placeholder" convention) — no live
+            // Azure Service Bus is available in integration tests. Use MassTransit's in-memory
+            // transport so a WebApplicationFactory-based host can start. Notifications never
+            // schedules delayed messages, so no scheduler is registered in either branch.
+            x.UsingInMemory((context, cfg) =>
+            {
+                cfg.ConfigureEndpoints(context);
+            });
+        }
+        else
+        {
+            x.UsingAzureServiceBus((context, cfg) =>
+            {
+                cfg.Host(messagingConnectionString);
+                cfg.ConfigureEndpoints(context);
+            });
+        }
     });
 
     builder.Services.AddHostedService<DbInitializer>();
 
+    // JWT bearer auth — validates tokens issued by Identity's OpenIddict server.
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.Authority = "http://identity";
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters.ValidateAudience = false;
+        });
+    builder.Services.AddAuthorization();
+
     var app = builder.Build();
 
     app.UseHttpsRedirection();
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.MapOpenApi();
     app.MapHealthChecks("/health");
+
+    NotificationsEndpoints.Map(app);
 
     app.Run();
 }

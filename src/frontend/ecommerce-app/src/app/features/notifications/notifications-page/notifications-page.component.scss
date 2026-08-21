@@ -1,0 +1,31 @@
+.notifications-page {
+  padding: var(--space-xl);
+
+  h1 {
+    margin-bottom: var(--space-lg);
+  }
+}
+
+.empty-state,
+.error-state {
+  text-align: center;
+  padding: var(--space-2xl) 0;
+
+  h2 {
+    margin-bottom: var(--space-md);
+  }
+
+  p {
+    margin-bottom: var(--space-lg);
+  }
+}
+
+.destructive-icon {
+  color: #d32f2f;
+}
+
+@media (max-width: 600px) {
+  .notifications-page {
+    padding: var(--space-md);
+  }
+}
