@@ -229,7 +229,7 @@ Plans:
 | 2. Identity, Catalog & Gateway | 12/12 | Complete   | 2026-06-19 |
 | 3. Cart & Orders Skeleton | 4/4 | In Progress|  |
 | 4. Checkout Saga & Payments | 7/7 | Complete   | 2026-08-12 |
-| 5. Fulfillment & Notifications | 11/11 | Complete   | 2026-08-20 |
+| 5. Fulfillment & Notifications | 11/11 | Complete    | 2026-08-21 |
 | 6. Hardening & Azure Deployment | 0/? | Not started | - |
 
 ---
